@@ -749,3 +749,19 @@ Caused by: java.net.ConnectException: Connection refused: no further information
 	at java.base/java.lang.Thread.run(Thread.java:842)
 2025-08-12 20:48:40.677 [SpringApplicationShutdownHook] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} closing ...
 2025-08-12 20:48:40.683 [SpringApplicationShutdownHook] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} closed
+2025-08-12 20:48:42.934 [main] INFO  c.i.xiaohongshu.auth.XiaohongshuAuthApplication - Starting XiaohongshuAuthApplication using Java 17.0.12 with PID 3920 (D:\J2EE\TEST\xiaohongshu\xiaohongshu-auth\target\classes started by 31027 in D:\J2EE\TEST\xiaohongshu)
+2025-08-12 20:48:42.935 [main] INFO  c.i.xiaohongshu.auth.XiaohongshuAuthApplication - The following 1 profile is active: "dev"
+2025-08-12 20:48:43.432 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2025-08-12 20:48:43.435 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2025-08-12 20:48:43.457 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 11 ms. Found 0 Redis repository interfaces.
+2025-08-12 20:48:43.982 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8080 (http)
+2025-08-12 20:48:43.989 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2025-08-12 20:48:43.989 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.5]
+2025-08-12 20:48:44.061 [main] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-08-12 20:48:44.061 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1089 ms
+2025-08-12 20:48:44.142 [main] INFO  c.a.d.s.b.a.DruidDataSourceAutoConfigure - Init DruidDataSource
+2025-08-12 20:48:44.393 [main] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} inited
+2025-08-12 20:48:45.095 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port(s): 8080 (http) with context path ''
+2025-08-12 20:48:45.101 [main] INFO  c.i.xiaohongshu.auth.XiaohongshuAuthApplication - Started XiaohongshuAuthApplication in 2.564 seconds (process running for 3.047)
+2025-08-12 20:48:45.102 [main] INFO  c.i.x.auth.runner.PushRolePermissions2RedisRunner - ==> 服务启动，开始同步角色权限数据到 Redis 中...
+2025-08-12 20:48:45.714 [main] INFO  c.i.x.auth.runner.PushRolePermissions2RedisRunner - ==> 服务启动，成功同步角色权限数据到 Redis 中...
