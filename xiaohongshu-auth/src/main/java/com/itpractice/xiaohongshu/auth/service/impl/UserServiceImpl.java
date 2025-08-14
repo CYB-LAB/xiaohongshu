@@ -21,6 +21,7 @@ import com.itpractice.xiaohongshu.auth.enums.ResponseCodeEnum;
 import com.itpractice.xiaohongshu.auth.enums.StatusEnum;
 import com.itpractice.xiaohongshu.auth.model.vo.user.UserLoginReqVO;
 import com.itpractice.xiaohongshu.auth.service.UserService;
+import com.itpratice.xiaohongshu.framework.biz.context.holder.LoginUserContextHolder;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -121,11 +122,14 @@ public class UserServiceImpl implements UserService {
     /**
      * 登出
      *
-     * @param userId
      * @return
      */
     @Override
-    public Response<?> logout(Long userId) {
+    public Response<?> logout() {
+        Long userId = LoginUserContextHolder.getUserId();
+
+        log.info("==> 用户退出登录, userId: {}", userId);
+
         // 退出登录 (指定用户 ID)
         StpUtil.logout(userId);
 
