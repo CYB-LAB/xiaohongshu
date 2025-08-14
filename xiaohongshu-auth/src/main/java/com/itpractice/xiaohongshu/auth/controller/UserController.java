@@ -2,6 +2,7 @@ package com.itpractice.xiaohongshu.auth.controller;
 
 import com.itpractice.framework.biz.operationlog.aspect.ApiOperationLog;
 import com.itpractice.framework.common.utils.Response;
+import com.itpractice.xiaohongshu.auth.model.vo.user.UpdatePasswordReqVO;
 import com.itpractice.xiaohongshu.auth.model.vo.user.UserLoginReqVO;
 import com.itpractice.xiaohongshu.auth.service.UserService;
 import jakarta.annotation.Resource;
@@ -33,5 +34,11 @@ public class UserController {
     public Response<?> logout() {
 
         return userService.logout();
+    }
+
+    @PostMapping("/password/update")
+    @ApiOperationLog(description = "修改密码")
+    public Response<?> updatePassword(@Validated @RequestBody UpdatePasswordReqVO updatePasswordReqVO) {
+        return userService.updatePassword(updatePasswordReqVO);
     }
 }

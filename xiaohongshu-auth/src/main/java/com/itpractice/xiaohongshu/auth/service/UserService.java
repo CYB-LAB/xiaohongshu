@@ -1,6 +1,7 @@
 package com.itpractice.xiaohongshu.auth.service;
 
 import com.itpractice.framework.common.utils.Response;
+import com.itpractice.xiaohongshu.auth.model.vo.user.UpdatePasswordReqVO;
 import com.itpractice.xiaohongshu.auth.model.vo.user.UserLoginReqVO;
 
 public interface UserService {
@@ -16,4 +17,11 @@ public interface UserService {
      * @return
      */
     Response<?> logout();
+
+    /**
+     * 修改密码
+     * @param updatePasswordReqVO
+     * @return
+     */
+    Response<?> updatePassword(UpdatePasswordReqVO updatePasswordReqVO);
 }

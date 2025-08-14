@@ -16,7 +16,7 @@ import java.util.Date;
 public class UserDO {
     private Long id;
 
-    private String xiaohashuId;
+    private String xiaohongshuId;
 
     private String password;
 

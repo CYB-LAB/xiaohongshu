@@ -19,6 +19,7 @@ import com.itpractice.xiaohongshu.auth.enums.DeletedEnum;
 import com.itpractice.xiaohongshu.auth.enums.LoginTypeEnum;
 import com.itpractice.xiaohongshu.auth.enums.ResponseCodeEnum;
 import com.itpractice.xiaohongshu.auth.enums.StatusEnum;
+import com.itpractice.xiaohongshu.auth.model.vo.user.UpdatePasswordReqVO;
 import com.itpractice.xiaohongshu.auth.model.vo.user.UserLoginReqVO;
 import com.itpractice.xiaohongshu.auth.service.UserService;
 import com.itpratice.xiaohongshu.framework.biz.context.holder.LoginUserContextHolder;
@@ -29,6 +30,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -53,6 +55,9 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     private RoleDOMapper roleDOMapper;
+
+    @Resource
+    private PasswordEncoder passwordEncoder;
 
     /**
      * 登录与注册
@@ -137,6 +142,34 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * 修改密码
+     *
+     * @param updatePasswordReqVO
+     * @return
+     */
+    @Override
+    public Response<?> updatePassword(UpdatePasswordReqVO updatePasswordReqVO) {
+        // 新密码
+        String newPassword = updatePasswordReqVO.getNewPassword();
+        // 密码加密
+        String encodePassword = passwordEncoder.encode(newPassword);
+
+
+        // 获取当前请求对应的用户 ID
+        Long userId = LoginUserContextHolder.getUserId();
+
+        UserDO userDO = UserDO.builder()
+                .id(userId)
+                .password(encodePassword)
+                .updateTime(LocalDateTime.now())
+                .build();
+        // 更新密码
+        userDOMapper.updateByPrimaryKeySelective(userDO);
+
+        return Response.success();
+    }
+
+    /**
      * 注册用户
      * @param phone
      * @return
@@ -146,12 +179,12 @@ public class UserServiceImpl implements UserService {
         return transactionTemplate.execute(status -> {
             try {
                 // 获取全局自增的小红书 ID
-                Long xiaohashuId = redisTemplate.opsForValue().increment(RedisKeyConstants.XIAOHONGSHU_ID_GENERATOR_KEY);
+                Long xiaohongshuId = redisTemplate.opsForValue().increment(RedisKeyConstants.XIAOHONGSHU_ID_GENERATOR_KEY);
 
                 UserDO userDO = UserDO.builder()
                         .phone(phone)
-                        .xiaohashuId(String.valueOf(xiaohashuId)) // 自动生成小红书号 ID
-                        .nickname("小红薯" + xiaohashuId) // 自动生成昵称, 如：小红薯10000
+                        .xiaohongshuId(String.valueOf(xiaohongshuId)) // 自动生成小红书号 ID
+                        .nickname("小红薯" + xiaohongshuId) // 自动生成昵称, 如：小红薯10000
                         .status(StatusEnum.ENABLE.getValue()) // 状态为启用
                         .createTime(LocalDateTime.now())
                         .updateTime(LocalDateTime.now())
