@@ -9,6 +9,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * @author cyb
+ *
+ * 用户模块
+ */
 @RestController
 @Slf4j
 @RequestMapping("/user")
@@ -30,6 +35,6 @@ public class UserController {
 
         // todo 账号退出登录逻辑待实现
 
-        return Response.success();
+        return userService.logout(Long.valueOf(userId));
     }
 }
