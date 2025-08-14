@@ -115,6 +115,13 @@
                 <version>${revision}</version>
             </dependency>
 
+            <!--    Jackson 配置组件    -->
+            <dependency>
+                <groupId>com.xiaohongshu</groupId>
+                <artifactId>xiaohongshu-spring-boot-starter-jackson</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
             <!-- Mybatis -->
             <dependency>
                 <groupId>org.mybatis.spring.boot</groupId>
@@ -174,6 +181,12 @@
                 <groupId>com.alibaba.boot</groupId>
                 <artifactId>nacos-config-spring-boot-starter</artifactId>
                 <version>${nacos-config.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.dev33</groupId>
+                <artifactId>sa-token-reactor-spring-boot3-starter</artifactId>
+                <version>${sa-token.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
