@@ -1,1 +1,2 @@
 com.itpratice.xiaohongshu.framework.biz.context.config.ContextAutoConfiguration
+com.itpratice.xiaohongshu.framework.biz.context.config.FeignContextAutoConfiguration
