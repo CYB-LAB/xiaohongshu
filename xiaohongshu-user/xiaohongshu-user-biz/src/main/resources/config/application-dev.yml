@@ -56,7 +56,7 @@ spring:
 
 logging:
   level:
-    com.itpractice.xiaohongshu.auth.domain.mapper: debug
+    com.itpractice.xiaohongshu.user.domain.mapper: debug
 
 
 

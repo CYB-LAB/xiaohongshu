@@ -22,6 +22,7 @@
         <module>xiaohongshu-framework</module>
         <module>xiaohongshu-gateway</module>
         <module>xiaohongshu-oss</module>
+        <module>xiaohongshu-user</module>
     </modules>
 
     <properties>
