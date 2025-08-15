@@ -70,10 +70,23 @@
             <groupId>javax.activation</groupId>
             <artifactId>activation</artifactId>
         </dependency>
+
         <!-- no more than 2.3.3-->
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
+        </dependency>
+
+        <!-- 业务接口日志组件 -->
+        <dependency>
+            <groupId>com.xiaohongshu</groupId>
+            <artifactId>xiaohongshu-spring-boot-starter-biz-operationlog</artifactId>
+        </dependency>
+
+        <!-- Jackson 组件 -->
+        <dependency>
+            <groupId>com.xiaohongshu</groupId>
+            <artifactId>xiaohongshu-spring-boot-starter-jackson</artifactId>
         </dependency>
 
     </dependencies>

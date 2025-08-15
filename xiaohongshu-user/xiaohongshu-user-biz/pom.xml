@@ -77,6 +77,11 @@
             <groupId>com.xiaohongshu</groupId>
             <artifactId>xiaohongshu-spring-boot-starter-jackson</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.xiaohongshu</groupId>
+            <artifactId>xiaohongshu-oss-api</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

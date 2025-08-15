@@ -20,5 +20,7 @@
             <groupId>com.xiaohongshu</groupId>
             <artifactId>xiaohongshu-common</artifactId>
         </dependency>
+
+
     </dependencies>
 </project>
