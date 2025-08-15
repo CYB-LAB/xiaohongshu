@@ -21,6 +21,7 @@
         <module>xiaohongshu-auth</module>
         <module>xiaohongshu-framework</module>
         <module>xiaohongshu-gateway</module>
+        <module>xiaohongshu-oss</module>
     </modules>
 
     <properties>
