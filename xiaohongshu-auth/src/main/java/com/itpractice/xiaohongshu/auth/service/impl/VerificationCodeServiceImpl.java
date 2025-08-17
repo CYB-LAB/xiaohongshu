@@ -4,7 +4,6 @@ import cn.hutool.core.util.RandomUtil;
 import com.itpractice.framework.common.exception.BizException;
 import com.itpractice.framework.common.utils.Response;
 import com.itpractice.xiaohongshu.auth.constant.RedisKeyConstants;
-import com.itpractice.xiaohongshu.auth.domain.mapper.UserDOMapper;
 import com.itpractice.xiaohongshu.auth.enums.LoginTypeEnum;
 import com.itpractice.xiaohongshu.auth.enums.ResponseCodeEnum;
 import com.itpractice.xiaohongshu.auth.model.vo.user.UserLoginReqVO;

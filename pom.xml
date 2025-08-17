@@ -251,6 +251,19 @@
                 <artifactId>feign-form</artifactId>
                 <version>${feign-form.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.xiaohongshu</groupId>
+                <artifactId>xiaohongshu-user-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.xiaohongshu</groupId>
+                <artifactId>xiaohongshu-user-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
