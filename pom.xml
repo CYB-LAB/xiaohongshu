@@ -24,6 +24,8 @@
         <module>xiaohongshu-oss</module>
         <module>xiaohongshu-user</module>
         <module>xiaohongshu-kv</module>
+        <module>xiaohongshu-distributed-id-generator</module>
+        <module>xiaohongshu-note</module>
     </modules>
 
     <properties>
@@ -271,6 +273,11 @@
                 <version>${revision}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.xiaohongshu</groupId>
+                <artifactId>xiaohongshu-distributed-id-generator-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

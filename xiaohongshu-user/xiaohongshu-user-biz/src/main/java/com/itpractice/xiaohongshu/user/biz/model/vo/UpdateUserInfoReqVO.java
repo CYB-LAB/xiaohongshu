@@ -32,7 +32,7 @@ public class UpdateUserInfoReqVO {
     /**
      * 小哈书 ID
      */
-    private String xiaohashuId;
+    private String xiaohongshuId;
 
     /**
      * 性别

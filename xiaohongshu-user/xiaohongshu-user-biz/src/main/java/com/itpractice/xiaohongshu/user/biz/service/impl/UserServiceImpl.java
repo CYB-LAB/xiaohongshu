@@ -20,6 +20,7 @@ import com.itpractice.xiaohongshu.user.biz.enums.ResponseCodeEnum;
 import com.itpractice.xiaohongshu.user.biz.enums.SexEnum;
 import com.itpractice.xiaohongshu.user.biz.enums.StatusEnum;
 import com.itpractice.xiaohongshu.user.biz.model.vo.UpdateUserInfoReqVO;
+import com.itpractice.xiaohongshu.user.biz.rpc.DistributedIdGeneratorRpcService;
 import com.itpractice.xiaohongshu.user.biz.rpc.OssRpcService;
 import com.itpractice.xiaohongshu.user.biz.service.UserService;
 import com.itpractice.xiaohongshu.user.dto.req.FindUserByPhoneReqDTO;
@@ -63,6 +64,9 @@ public class UserServiceImpl implements UserService {
     @Resource
     private RoleDOMapper roleDOMapper;
 
+    @Resource
+    private DistributedIdGeneratorRpcService distributedIdGeneratorRpcService;
+
     /**
      * 更新用户信息
      *
@@ -103,10 +107,10 @@ public class UserServiceImpl implements UserService {
         }
 
         // 小红书号
-        String xiaohashuId = updateUserInfoReqVO.getXiaohashuId();
-        if (StringUtils.isNotBlank(xiaohashuId)) {
-            Preconditions.checkArgument(ParamUtils.checkXiaohongshuId(xiaohashuId), ResponseCodeEnum.XIAOHONGSHU_ID_VALID_FAIL.getErrorMessage());
-            userDO.setXiaohongshuId(xiaohashuId);
+        String xiaohongshuId = updateUserInfoReqVO.getXiaohongshuId();
+        if (StringUtils.isNotBlank(xiaohongshuId)) {
+            Preconditions.checkArgument(ParamUtils.checkXiaohongshuId(xiaohongshuId), ResponseCodeEnum.XIAOHONGSHU_ID_VALID_FAIL.getErrorMessage());
+            userDO.setXiaohongshuId(xiaohongshuId);
             needUpdate = true;
         }
 
@@ -156,6 +160,11 @@ public class UserServiceImpl implements UserService {
         return Response.success();
     }
 
+    /**
+     *  注册
+     * @param registerUserReqDTO
+     * @return
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Response<Long> register(RegisterUserReqDTO registerUserReqDTO) {
@@ -172,11 +181,19 @@ public class UserServiceImpl implements UserService {
 
         // 未注册，则进行注册
         // 获取全局自增的小红书 ID
-        Long xiaohongshuId = redisTemplate.opsForValue().increment(RedisKeyConstants.XIAOHONGSHU_ID_GENERATOR_KEY);
+        // Long xiaohongshuId = redisTemplate.opsForValue().increment(RedisKeyConstants.XIAOHONGSHU_ID_GENERATOR_KEY);
+
+        // RPC: 调用分布式 ID 生成服务生成小红书 ID
+        String xiaohongshuId = distributedIdGeneratorRpcService.getXiaohongshuId();
+
+        // RPC: 调用分布式 ID 生成服务生成用户 ID
+        String userIdStr = distributedIdGeneratorRpcService.getUserId();
+        Long userId = Long.valueOf(userIdStr);
 
         UserDO userDO  = UserDO.builder()
+                .id(userId)
                 .phone(phone)
-                .xiaohongshuId(String.valueOf(xiaohongshuId)) // 自动生成小红书号 ID
+                .xiaohongshuId(xiaohongshuId) // 自动生成小红书号 ID
                 .nickname("小红薯" + xiaohongshuId) // 自动生成昵称, 如：小红薯10000
                 .status(StatusEnum.ENABLE.getValue()) // 状态为启用
                 .createTime(LocalDateTime.now())
@@ -188,7 +205,7 @@ public class UserServiceImpl implements UserService {
         userDOMapper.insert(userDO);
 
         // 获取刚刚添加入库的用户 ID
-        Long userId = userDO.getId();
+        // Long userId = userDO.getId();
 
         // 给该用户分配一个默认角色
         UserRoleDO userRoleDO = UserRoleDO.builder()
