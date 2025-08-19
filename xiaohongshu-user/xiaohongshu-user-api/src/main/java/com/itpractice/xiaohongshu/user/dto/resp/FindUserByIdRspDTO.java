@@ -8,15 +8,27 @@ import lombok.NoArgsConstructor;
 /**
  * @author cyb
  *
- * 根据手机号查询用户信息  出参
+ * 根据id查询用户信息  出参
  */
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class FindUserByPhoneRspDTO {
+public class FindUserByIdRspDTO {
 
+    /**
+     * 用户 ID
+     */
     private Long id;
 
-    private String password;
+    /**
+     * 昵称
+     */
+    private String nickName;
+
+    /**
+     * 头像
+     */
+    private String avatar;
 }
