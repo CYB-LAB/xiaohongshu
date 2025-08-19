@@ -2,6 +2,8 @@ package com.itpractice.xiaohongshu.note.biz.controller;
 
 import com.itpractice.framework.biz.operationlog.aspect.ApiOperationLog;
 import com.itpractice.framework.common.utils.Response;
+import com.itpractice.xiaohongshu.note.biz.model.vo.FindNoteDetailReqVO;
+import com.itpractice.xiaohongshu.note.biz.model.vo.FindNoteDetailRspVO;
 import com.itpractice.xiaohongshu.note.biz.model.vo.PublishNoteReqVO;
 import com.itpractice.xiaohongshu.note.biz.service.NoteService;
 import jakarta.annotation.Resource;
@@ -24,5 +26,11 @@ public class NoteController {
     @ApiOperationLog(description = "笔记发布")
     public Response<?> publishNote(@Validated @RequestBody PublishNoteReqVO publishNoteReqVO) {
         return noteService.publishNote(publishNoteReqVO);
+    }
+
+    @PostMapping(value = "/detail")
+    @ApiOperationLog(description = "笔记详情")
+    public Response<FindNoteDetailRspVO> findNoteDetail(@Validated @RequestBody FindNoteDetailReqVO findNoteDetailReqVO) {
+        return noteService.findNoteDetail(findNoteDetailReqVO);
     }
 }
