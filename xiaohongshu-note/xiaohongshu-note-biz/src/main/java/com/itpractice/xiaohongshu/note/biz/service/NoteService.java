@@ -1,10 +1,7 @@
 package com.itpractice.xiaohongshu.note.biz.service;
 
 import com.itpractice.framework.common.utils.Response;
-import com.itpractice.xiaohongshu.note.biz.model.vo.FindNoteDetailReqVO;
-import com.itpractice.xiaohongshu.note.biz.model.vo.FindNoteDetailRspVO;
-import com.itpractice.xiaohongshu.note.biz.model.vo.PublishNoteReqVO;
-import com.itpractice.xiaohongshu.note.biz.model.vo.UpdateNoteReqVO;
+import com.itpractice.xiaohongshu.note.biz.model.vo.*;
 
 /**
  * @author cyb
@@ -40,4 +37,11 @@ public interface NoteService {
      */
     void deleteNoteLocalCache(Long noteId);
 
+    /**
+     * 删除笔记
+     * @param deleteNoteReqVO
+     * @return
+     */
+    Response<?> deleteNote(DeleteNoteReqVO deleteNoteReqVO);
 }
+
