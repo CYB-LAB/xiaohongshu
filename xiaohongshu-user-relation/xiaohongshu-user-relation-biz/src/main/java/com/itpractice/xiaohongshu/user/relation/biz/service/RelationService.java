@@ -1,7 +1,8 @@
 package com.itpractice.xiaohongshu.user.relation.biz.service;
 
-import com.itpractice.xiaohongshu.user.relation.biz.mode.vo.FollowUserReqVO;
 import com.itpractice.framework.common.utils.Response;
+import com.itpractice.xiaohongshu.user.relation.biz.mode.vo.FollowUserReqVO;
+import com.itpractice.xiaohongshu.user.relation.biz.mode.vo.UnfollowUserReqVO;
 
 /**
  * @author cyb
@@ -16,4 +17,11 @@ public interface RelationService {
      * @return
      */
     Response<?> follow(FollowUserReqVO followUserReqVO);
+
+    /**
+     * 取关用户
+     * @param unfollowUserReqVO
+     * @return
+     */
+    Response<?> unfollow(UnfollowUserReqVO unfollowUserReqVO);
 }
