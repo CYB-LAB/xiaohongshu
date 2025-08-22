@@ -1,4 +1,4 @@
-package com.itpractice.xiaohongshu.user.relation.biz.mode.dto;
+package com.itpractice.xiaohongshu.user.relation.biz.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

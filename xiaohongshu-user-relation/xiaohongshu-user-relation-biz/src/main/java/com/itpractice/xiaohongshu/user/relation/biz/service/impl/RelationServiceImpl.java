@@ -13,10 +13,10 @@ import com.itpractice.xiaohongshu.user.relation.biz.domain.dataobject.FollowingD
 import com.itpractice.xiaohongshu.user.relation.biz.domain.mapper.FollowingDOMapper;
 import com.itpractice.xiaohongshu.user.relation.biz.enums.LuaResultEnum;
 import com.itpractice.xiaohongshu.user.relation.biz.enums.ResponseCodeEnum;
-import com.itpractice.xiaohongshu.user.relation.biz.mode.dto.FollowUserMqDTO;
-import com.itpractice.xiaohongshu.user.relation.biz.mode.dto.UnfollowUserMqDTO;
-import com.itpractice.xiaohongshu.user.relation.biz.mode.vo.FollowUserReqVO;
-import com.itpractice.xiaohongshu.user.relation.biz.mode.vo.UnfollowUserReqVO;
+import com.itpractice.xiaohongshu.user.relation.biz.model.dto.FollowUserMqDTO;
+import com.itpractice.xiaohongshu.user.relation.biz.model.dto.UnfollowUserMqDTO;
+import com.itpractice.xiaohongshu.user.relation.biz.model.vo.FollowUserReqVO;
+import com.itpractice.xiaohongshu.user.relation.biz.model.vo.UnfollowUserReqVO;
 import com.itpractice.xiaohongshu.user.relation.biz.rpc.UserRpcService;
 import com.itpractice.xiaohongshu.user.relation.biz.service.RelationService;
 import com.itpractice.xiaohongshu.user.relation.biz.util.DateUtils;

@@ -2,8 +2,8 @@ package com.itpractice.xiaohongshu.user.relation.biz.controller;
 
 import com.itpractice.framework.biz.operationlog.aspect.ApiOperationLog;
 import com.itpractice.framework.common.utils.Response;
-import com.itpractice.xiaohongshu.user.relation.biz.mode.vo.FollowUserReqVO;
-import com.itpractice.xiaohongshu.user.relation.biz.mode.vo.UnfollowUserReqVO;
+import com.itpractice.xiaohongshu.user.relation.biz.model.vo.FollowUserReqVO;
+import com.itpractice.xiaohongshu.user.relation.biz.model.vo.UnfollowUserReqVO;
 import com.itpractice.xiaohongshu.user.relation.biz.service.RelationService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;

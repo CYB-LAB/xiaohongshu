@@ -1,8 +1,8 @@
 package com.itpractice.xiaohongshu.user.relation.biz.service;
 
 import com.itpractice.framework.common.utils.Response;
-import com.itpractice.xiaohongshu.user.relation.biz.mode.vo.FollowUserReqVO;
-import com.itpractice.xiaohongshu.user.relation.biz.mode.vo.UnfollowUserReqVO;
+import com.itpractice.xiaohongshu.user.relation.biz.model.vo.FollowUserReqVO;
+import com.itpractice.xiaohongshu.user.relation.biz.model.vo.UnfollowUserReqVO;
 
 /**
  * @author cyb
