@@ -41,4 +41,11 @@ public interface FollowingDOMapper {
     List<FollowingDO> selectPageListByUserId(@Param("userId") Long userId,
                                              @Param("offset") long offset,
                                              @Param("limit") long limit);
+
+    /**
+     * 查询关注用户列表
+     * @param userId
+     * @return
+     */
+    List<FollowingDO> selectAllByUserId(Long userId);
 }
