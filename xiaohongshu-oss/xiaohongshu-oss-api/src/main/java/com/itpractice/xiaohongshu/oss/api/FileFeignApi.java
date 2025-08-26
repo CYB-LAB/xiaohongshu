@@ -1,6 +1,6 @@
 package com.itpractice.xiaohongshu.oss.api;
 
-import com.itpractice.framework.common.utils.Response;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.oss.config.FeignFormConfig;
 import com.itpractice.xiaohongshu.oss.constant.ApiConstants;
 import org.springframework.cloud.openfeign.FeignClient;

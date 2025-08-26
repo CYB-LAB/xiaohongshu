@@ -1,6 +1,6 @@
 package com.itpractice.xiaohongshu.note.biz.service;
 
-import com.itpractice.framework.common.utils.Response;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.note.biz.model.vo.*;
 
 /**

@@ -1,6 +1,6 @@
 package com.itpractice.xiaohongshu.auth.service;
 
-import com.itpractice.framework.common.utils.Response;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.auth.model.vo.user.UpdatePasswordReqVO;
 import com.itpractice.xiaohongshu.auth.model.vo.user.UserLoginReqVO;
 

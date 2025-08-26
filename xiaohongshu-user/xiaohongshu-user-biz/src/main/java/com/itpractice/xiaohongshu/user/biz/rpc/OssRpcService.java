@@ -1,6 +1,6 @@
 package com.itpractice.xiaohongshu.user.biz.rpc;
 
-import com.itpractice.framework.common.utils.Response;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.oss.api.FileFeignApi;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;

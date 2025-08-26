@@ -7,7 +7,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.base.Preconditions;
 import com.itpractice.framework.common.exception.BizException;
 import com.itpractice.framework.common.utils.JsonUtils;
-import com.itpractice.framework.common.utils.Response;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.note.biz.constant.MQConstants;
 import com.itpractice.xiaohongshu.note.biz.constant.RedisKeyConstants;
 import com.itpractice.xiaohongshu.note.biz.domain.dataobject.NoteDO;

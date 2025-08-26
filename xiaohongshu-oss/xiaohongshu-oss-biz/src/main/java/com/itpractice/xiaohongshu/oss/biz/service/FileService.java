@@ -1,6 +1,6 @@
 package com.itpractice.xiaohongshu.oss.biz.service;
 
-import com.itpractice.framework.common.utils.Response;
+import com.itpractice.framework.common.response.Response;
 import org.springframework.web.multipart.MultipartFile;
 
 /**

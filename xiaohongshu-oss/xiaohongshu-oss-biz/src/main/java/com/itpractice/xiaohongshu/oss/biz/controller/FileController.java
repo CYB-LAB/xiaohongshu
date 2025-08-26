@@ -1,6 +1,6 @@
 package com.itpractice.xiaohongshu.oss.biz.controller;
 
-import com.itpractice.framework.common.utils.Response;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.oss.biz.service.FileService;
 import com.itpratice.xiaohongshu.framework.biz.context.holder.LoginUserContextHolder;
 import jakarta.annotation.Resource;

@@ -2,8 +2,7 @@ package com.itpractice.xiahongshu.gateway.exception;
 
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;
-import cn.dev33.satoken.exception.SaTokenException;
-import com.itpractice.framework.common.utils.Response;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiahongshu.gateway.enums.ResponseCodeEnum;
 import jakarta.annotation.Resource;
 import com.fasterxml.jackson.databind.ObjectMapper;

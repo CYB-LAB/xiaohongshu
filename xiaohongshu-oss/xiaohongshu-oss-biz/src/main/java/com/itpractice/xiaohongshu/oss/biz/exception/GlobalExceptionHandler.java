@@ -1,7 +1,7 @@
 package com.itpractice.xiaohongshu.oss.biz.exception;
 
 import com.itpractice.framework.common.exception.BizException;
-import com.itpractice.framework.common.utils.Response;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.oss.biz.enums.ResponseCodeEnum;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;

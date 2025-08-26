@@ -1,7 +1,7 @@
 package com.itpractice.xiaohongshu.kv.biz.service.impl;
 
 import com.itpractice.framework.common.exception.BizException;
-import com.itpractice.framework.common.utils.Response;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.kv.biz.domain.dataobject.NoteContentDO;
 import com.itpractice.xiaohongshu.kv.biz.domain.repository.NoteContentRepository;
 import com.itpractice.xiaohongshu.kv.biz.enums.ResponseCodeEnum;

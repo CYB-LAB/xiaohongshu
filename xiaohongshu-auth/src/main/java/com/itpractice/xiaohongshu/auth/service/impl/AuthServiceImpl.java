@@ -4,7 +4,7 @@ import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import com.google.common.base.Preconditions;
 import com.itpractice.framework.common.exception.BizException;
-import com.itpractice.framework.common.utils.Response;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.auth.constant.RedisKeyConstants;
 import com.itpractice.xiaohongshu.auth.enums.LoginTypeEnum;
 import com.itpractice.xiaohongshu.auth.enums.ResponseCodeEnum;
@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Objects;

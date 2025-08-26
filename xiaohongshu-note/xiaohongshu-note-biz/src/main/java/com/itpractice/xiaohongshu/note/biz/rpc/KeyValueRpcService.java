@@ -1,6 +1,6 @@
 package com.itpractice.xiaohongshu.note.biz.rpc;
 
-import com.itpractice.framework.common.utils.Response;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.kv.dto.api.KeyValueFeignApi;
 import com.itpractice.xiaohongshu.kv.dto.req.AddNoteContentReqDTO;
 import com.itpractice.xiaohongshu.kv.dto.req.DeleteNoteContentReqDTO;

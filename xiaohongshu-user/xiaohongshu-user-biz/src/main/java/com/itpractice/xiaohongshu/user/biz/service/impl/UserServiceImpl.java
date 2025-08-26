@@ -9,7 +9,7 @@ import com.google.common.collect.Lists;
 import com.itpractice.framework.common.exception.BizException;
 import com.itpractice.framework.common.utils.JsonUtils;
 import com.itpractice.framework.common.utils.ParamUtils;
-import com.itpractice.framework.common.utils.Response;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.oss.api.FileFeignApi;
 import com.itpractice.xiaohongshu.user.biz.constant.RedisKeyConstants;
 import com.itpractice.xiaohongshu.user.biz.constant.RoleConstants;

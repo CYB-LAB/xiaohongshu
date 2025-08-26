@@ -4,8 +4,9 @@ package com.itpractice.xiaohongshu.user.relation.biz.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.itpractice.framework.common.exception.BizException;
+import com.itpractice.framework.common.response.PageResponse;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.framework.common.utils.JsonUtils;
-import com.itpractice.framework.common.utils.Response;
 import com.itpractice.xiaohongshu.user.dto.resp.FindUserByIdRspDTO;
 import com.itpractice.xiaohongshu.user.relation.biz.constant.MQConstants;
 import com.itpractice.xiaohongshu.user.relation.biz.constant.RedisKeyConstants;
@@ -15,6 +16,8 @@ import com.itpractice.xiaohongshu.user.relation.biz.enums.LuaResultEnum;
 import com.itpractice.xiaohongshu.user.relation.biz.enums.ResponseCodeEnum;
 import com.itpractice.xiaohongshu.user.relation.biz.model.dto.FollowUserMqDTO;
 import com.itpractice.xiaohongshu.user.relation.biz.model.dto.UnfollowUserMqDTO;
+import com.itpractice.xiaohongshu.user.relation.biz.model.vo.FindFollowingListReqVO;
+import com.itpractice.xiaohongshu.user.relation.biz.model.vo.FindFollowingUserRspVO;
 import com.itpractice.xiaohongshu.user.relation.biz.model.vo.FollowUserReqVO;
 import com.itpractice.xiaohongshu.user.relation.biz.model.vo.UnfollowUserReqVO;
 import com.itpractice.xiaohongshu.user.relation.biz.rpc.UserRpcService;
@@ -38,6 +41,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author cyb
@@ -283,6 +287,77 @@ public class RelationServiceImpl implements RelationService {
 
         return Response.success();
     }
+
+    /**
+     * 查询用户关注列表
+     *
+     * @param findFollowingListReqVO
+     * @return
+     */
+    @Override
+    public PageResponse<FindFollowingUserRspVO> findFollowingList(FindFollowingListReqVO findFollowingListReqVO) {
+
+        // 想要查询的用户 ID
+        Long userId = findFollowingListReqVO.getUserId();
+        // 页码
+        Integer pageNo = findFollowingListReqVO.getPageNo();
+
+        // 先从 Redis 中查询
+        String followingListRedisKey = RedisKeyConstants.buildUserFollowingKey(userId);
+
+        // 查询目标用户关注列表 ZSet 的总大小
+        long total = redisTemplate.opsForZSet().zCard(followingListRedisKey);
+
+        // 返参
+        List<FindFollowingUserRspVO> findFollowingUserRspVOS = null;
+
+        if (total > 0) { // 缓存中有数据
+            // 每页展示 10 条数据
+            long limit = 10;
+            // 计算一共多少页
+            long totalPage = PageResponse.getTotalPage(total, limit);
+
+            // 请求的页码超出了总页数
+            if (pageNo > totalPage) return PageResponse.success(null, pageNo, total);
+
+            // 准备从 Redis 中查询 ZSet 分页数据
+            // 每页 10 个元素，计算偏移量
+            long offset = (pageNo - 1) * limit;
+
+            // 使用 ZREVRANGEBYSCORE 命令按 score 降序获取元素，同时使用 LIMIT 子句实现分页
+            // 注意：这里使用了 Double.POSITIVE_INFINITY 和 Double.NEGATIVE_INFINITY 作为分数范围
+            // 因为关注列表最多有 1000 个元素，这样可以确保获取到所有的元素
+            Set<Object> followingUserIdsSet = redisTemplate.opsForZSet()
+                    .reverseRangeByScore(followingListRedisKey, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, offset, limit);
+
+            if (CollUtil.isNotEmpty(followingUserIdsSet)) {
+                // 提取所有用户 ID 到集合中
+                List<Long> userIds = followingUserIdsSet.stream().map(object -> Long.valueOf(object.toString())).toList();
+
+                // RPC: 批量查询用户信息
+                List<FindUserByIdRspDTO> findUserByIdRspDTOS = userRpcService.findByIds(userIds);
+
+                // 若不为空，DTO 转 VO
+                if (CollUtil.isNotEmpty(findUserByIdRspDTOS)) {
+                    findFollowingUserRspVOS = findUserByIdRspDTOS.stream()
+                            .map(dto -> FindFollowingUserRspVO.builder()
+                                    .userId(dto.getId())
+                                    .avatar(dto.getAvatar())
+                                    .nickname(dto.getNickName())
+                                    .introduction(dto.getIntroduction())
+                                    .build())
+                            .toList();
+                }
+            }
+        } else {
+            // TODO: 若 Redis 中没有数据，则从数据库查询
+
+            // TODO: 异步将关注列表全量同步到 Redis
+        }
+
+        return PageResponse.success(findFollowingUserRspVOS, pageNo, total);
+    }
+
 
     /**
      * 校验 Lua 脚本结果，根据状态码抛出对应的业务异常

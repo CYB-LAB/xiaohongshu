@@ -1,7 +1,7 @@
 package com.itpractice.xiaohongshu.user.api;
 
 
-import com.itpractice.framework.common.utils.Response;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.user.constant.ApiConstants;
 import com.itpractice.xiaohongshu.user.dto.req.*;
 import com.itpractice.xiaohongshu.user.dto.resp.FindUserByIdRspDTO;

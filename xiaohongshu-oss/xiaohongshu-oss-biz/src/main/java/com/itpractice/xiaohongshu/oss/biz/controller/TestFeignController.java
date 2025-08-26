@@ -1,7 +1,7 @@
 package com.itpractice.xiaohongshu.oss.biz.controller;
 
 import com.itpractice.framework.biz.operationlog.aspect.ApiOperationLog;
-import com.itpractice.framework.common.utils.Response;
+import com.itpractice.framework.common.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

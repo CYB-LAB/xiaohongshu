@@ -1,6 +1,6 @@
 package com.itpractice.xiaohongshu.user.biz.service;
 
-import com.itpractice.framework.common.utils.Response;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.user.biz.model.vo.UpdateUserInfoReqVO;
 import com.itpractice.xiaohongshu.user.dto.req.*;
 import com.itpractice.xiaohongshu.user.dto.resp.FindUserByIdRspDTO;

@@ -1,4 +1,4 @@
-package com.itpractice.framework.common.utils;
+package com.itpractice.framework.common.response;
 
 import com.itpractice.framework.common.exception.BaseExceptionInterface;
 import com.itpractice.framework.common.exception.BizException;

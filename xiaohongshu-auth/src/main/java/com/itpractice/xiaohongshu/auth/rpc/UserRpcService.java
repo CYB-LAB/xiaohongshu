@@ -1,7 +1,7 @@
 package com.itpractice.xiaohongshu.auth.rpc;
 
 
-import com.itpractice.framework.common.utils.Response;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.user.api.UserFeignApi;
 import com.itpractice.xiaohongshu.user.dto.req.FindUserByPhoneReqDTO;
 import com.itpractice.xiaohongshu.user.dto.req.RegisterUserReqDTO;
