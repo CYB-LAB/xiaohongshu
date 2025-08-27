@@ -663,11 +663,15 @@ public class NoteServiceImpl implements NoteService {
                 // 目标笔记已经被点赞
                 if (count > 0) {
                     // 异步初始化布隆过滤器
-                    asynBatchAddNoteLike2BloomAndExpire(userId, expireSeconds, bloomUserNoteLikeListKey);
+                    // 异步初始化布隆过滤器
+                    threadPoolTaskExecutor.submit(() ->
+                            batchAddNoteLike2BloomAndExpire(userId, expireSeconds, bloomUserNoteLikeListKey));
                     throw new BizException(ResponseCodeEnum.NOTE_ALREADY_LIKED);
                 }
 
                 // 若数据库中也没有点赞记录，说明该用户还未点赞过任何笔记
+                batchAddNoteLike2BloomAndExpire(userId, expireSeconds, bloomUserNoteLikeListKey);
+
                 // Lua 脚本路径
                 script.setScriptSource(new ResourceScriptSource(new ClassPathResource("/lua/bloom_add_note_like_and_expire.lua")));
                 // 返回值类型
@@ -773,6 +777,36 @@ public class NoteServiceImpl implements NoteService {
     }
 
     /**
+     * 异步初始化布隆过滤器
+     * @param userId
+     * @param expireSeconds
+     * @param bloomUserNoteLikeListKey
+     */
+    private void batchAddNoteLike2BloomAndExpire(Long userId, long expireSeconds, String bloomUserNoteLikeListKey) {
+        try {
+            // 异步全量同步一下，并设置过期时间
+            List<NoteLikeDO> noteLikeDOS = noteLikeDOMapper.selectByUserId(userId);
+
+            if (CollUtil.isNotEmpty(noteLikeDOS)) {
+                DefaultRedisScript<Long> script = new DefaultRedisScript<>();
+                // Lua 脚本路径
+                script.setScriptSource(new ResourceScriptSource(new ClassPathResource("/lua/bloom_batch_add_note_like_and_expire.lua")));
+                // 返回值类型
+                script.setResultType(Long.class);
+
+                // 构建 Lua 参数
+                List<Object> luaArgs = Lists.newArrayList();
+                noteLikeDOS.forEach(noteLikeDO -> luaArgs.add(noteLikeDO.getNoteId())); // 将每个点赞的笔记 ID 传入
+                luaArgs.add(expireSeconds);  // 最后一个参数是过期时间（秒）
+                redisTemplate.execute(script, Collections.singletonList(bloomUserNoteLikeListKey), luaArgs.toArray());
+            }
+        } catch (Exception e) {
+            log.error("## 异步初始化布隆过滤器异常: ", e);
+        }
+    }
+
+
+    /**
      * 异步初始化用户点赞笔记 ZSet
      * @param userId
      * @param userNoteLikeZSetKey
@@ -827,36 +861,6 @@ public class NoteServiceImpl implements NoteService {
         return luaArgs;
     }
 
-    /**
-     * 异步批量添加笔记点赞数据到布隆过滤器中，并设置过期时间
-     * @param userId
-     * @param expireSeconds
-     * @param bloomUserNoteLikeListKey
-     */
-    private void asynBatchAddNoteLike2BloomAndExpire(Long userId, long expireSeconds, String bloomUserNoteLikeListKey) {
-        threadPoolTaskExecutor.submit(() -> {
-            try {
-                // 异步全量同步一下，并设置过期时间
-                List<NoteLikeDO> noteLikeDOS = noteLikeDOMapper.selectByUserId(userId);
-
-                if (CollUtil.isNotEmpty(noteLikeDOS)) {
-                    DefaultRedisScript<Long> script = new DefaultRedisScript<>();
-                    // Lua 脚本路径
-                    script.setScriptSource(new ResourceScriptSource(new ClassPathResource("/lua/bloom_batch_add_note_like_and_expire.lua")));
-                    // 返回值类型
-                    script.setResultType(Long.class);
-
-                    // 构建 Lua 参数
-                    List<Object> luaArgs = Lists.newArrayList();
-                    noteLikeDOS.forEach(noteLikeDO -> luaArgs.add(noteLikeDO.getNoteId())); // 将每个点赞的笔记 ID 传入
-                    luaArgs.add(expireSeconds);  // 最后一个参数是过期时间（秒）
-                    redisTemplate.execute(script, Collections.singletonList(bloomUserNoteLikeListKey), luaArgs.toArray());
-                }
-            } catch (Exception e) {
-                log.error("## 异步初始化布隆过滤器异常: ", e);
-            }
-        });
-    }
 
     /**
      * 校验笔记的可见性
