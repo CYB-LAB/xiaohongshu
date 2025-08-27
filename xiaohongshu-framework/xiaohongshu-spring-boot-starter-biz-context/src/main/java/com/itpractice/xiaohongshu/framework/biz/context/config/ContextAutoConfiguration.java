@@ -1,6 +1,6 @@
-package com.itpratice.xiaohongshu.framework.biz.context.config;
+package com.itpractice.xiaohongshu.framework.biz.context.config;
 
-import com.itpratice.xiaohongshu.framework.biz.context.filter.HeaderUserId2ContextFilter;
+import com.itpractice.xiaohongshu.framework.biz.context.filter.HeaderUserId2ContextFilter;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;

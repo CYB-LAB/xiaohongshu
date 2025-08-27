@@ -2,7 +2,7 @@ package com.itpractice.xiaohongshu.oss.biz.controller;
 
 import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.oss.biz.service.FileService;
-import com.itpratice.xiaohongshu.framework.biz.context.holder.LoginUserContextHolder;
+import com.itpractice.xiaohongshu.framework.biz.context.holder.LoginUserContextHolder;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;

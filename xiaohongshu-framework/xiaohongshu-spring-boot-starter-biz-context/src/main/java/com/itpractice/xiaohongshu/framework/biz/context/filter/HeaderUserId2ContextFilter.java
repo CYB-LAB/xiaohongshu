@@ -1,7 +1,7 @@
-package com.itpratice.xiaohongshu.framework.biz.context.filter;
+package com.itpractice.xiaohongshu.framework.biz.context.filter;
 
 import com.itpractice.framework.common.constant.GlobalConstants;
-import com.itpratice.xiaohongshu.framework.biz.context.holder.LoginUserContextHolder;
+import com.itpractice.xiaohongshu.framework.biz.context.holder.LoginUserContextHolder;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

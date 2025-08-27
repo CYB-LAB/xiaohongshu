@@ -1,7 +1,7 @@
-package com.itpratice.xiaohongshu.framework.biz.context.interceptor;
+package com.itpractice.xiaohongshu.framework.biz.context.interceptor;
 
 import com.itpractice.framework.common.constant.GlobalConstants;
-import com.itpratice.xiaohongshu.framework.biz.context.holder.LoginUserContextHolder;
+import com.itpractice.xiaohongshu.framework.biz.context.holder.LoginUserContextHolder;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import lombok.extern.slf4j.Slf4j;

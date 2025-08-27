@@ -1,4 +1,4 @@
-package com.itpratice.xiaohongshu.framework.biz.context.holder;
+package com.itpractice.xiaohongshu.framework.biz.context.holder;
 
 
 import com.alibaba.ttl.TransmittableThreadLocal;

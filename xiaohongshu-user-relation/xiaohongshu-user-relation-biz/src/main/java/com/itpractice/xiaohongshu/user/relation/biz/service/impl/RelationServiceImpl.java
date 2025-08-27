@@ -22,7 +22,7 @@ import com.itpractice.xiaohongshu.user.relation.biz.model.vo.*;
 import com.itpractice.xiaohongshu.user.relation.biz.rpc.UserRpcService;
 import com.itpractice.xiaohongshu.user.relation.biz.service.RelationService;
 import com.itpractice.xiaohongshu.user.relation.biz.util.DateUtils;
-import com.itpratice.xiaohongshu.framework.biz.context.holder.LoginUserContextHolder;
+import com.itpractice.xiaohongshu.framework.biz.context.holder.LoginUserContextHolder;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.SendCallback;

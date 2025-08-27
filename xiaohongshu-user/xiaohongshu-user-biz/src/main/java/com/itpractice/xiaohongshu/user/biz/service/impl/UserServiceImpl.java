@@ -30,7 +30,7 @@ import com.itpractice.xiaohongshu.user.biz.service.UserService;
 import com.itpractice.xiaohongshu.user.dto.req.*;
 import com.itpractice.xiaohongshu.user.dto.resp.FindUserByIdRspDTO;
 import com.itpractice.xiaohongshu.user.dto.resp.FindUserByPhoneRspDTO;
-import com.itpratice.xiaohongshu.framework.biz.context.holder.LoginUserContextHolder;
+import com.itpractice.xiaohongshu.framework.biz.context.holder.LoginUserContextHolder;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
