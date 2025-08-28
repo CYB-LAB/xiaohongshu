@@ -25,13 +25,16 @@
           and status = 1
         limit 1
     </select>
-    <select id="selectByUserId" resultType="com.itpractice.xiaohongshu.note.biz.domain.dataobject.NoteLikeDO">
+    <select id="selectByUserId" resultMap="BaseResultMap"
+            resultType="com.itpractice.xiaohongshu.note.biz.domain.dataobject.NoteLikeDO"
+            parameterType="map"
+    >
         select note_id
         from t_note_like
         where user_id = #{userId}
           and status = 1
     </select>
-    <select id="selectNoteIsLiked" resultType="java.lang.Integer">
+    <select id="selectNoteIsLiked" resultType="int" parameterType="map">
         select count(1)
         from t_note_like
         where user_id = #{userId}
@@ -98,11 +101,11 @@
             </if>
         </trim>
     </insert>
-    <insert id="insertOrUpdate">
+    <insert id="insertOrUpdate" parameterType="com.itpractice.xiaohongshu.note.biz.domain.dataobject.NoteLikeDO">
         INSERT INTO t_note_like (user_id, note_id, create_time, status)
         VALUES (#{userId}, #{noteId}, #{createTime}, #{status})
-        ON DUPLICATE KEY UPDATE
-                             create_time = #{createTime}, status = #{status};
+        ON DUPLICATE KEY UPDATE create_time = #{createTime},
+                                status      = #{status};
     </insert>
     <update id="updateByPrimaryKeySelective"
             parameterType="com.itpractice.xiaohongshu.note.biz.domain.dataobject.NoteLikeDO">
@@ -130,5 +133,9 @@
             create_time = #{createTime,jdbcType=TIMESTAMP},
             `status`    = #{status,jdbcType=TINYINT}
         where id = #{id,jdbcType=BIGINT}
+    </update>
+    <update id="update2UnlikeByUserIdAndNoteId" parameterType="com.itpractice.xiaohongshu.note.biz.domain.dataobject.NoteLikeDO">
+        update t_note_like set status = #{status}, create_time = #{createTime}
+        where user_id = #{userId} and note_id = #{noteId} and status = 1
     </update>
 </mapper>
