@@ -64,6 +64,11 @@
       </if>
     </trim>
   </insert>
+  <insert id="insertOrUpdateLikeTotalByNoteId" parameterType="map">
+      INSERT INTO t_note_count (note_id, like_total)
+      VALUES (#{noteId}, #{count})
+      ON DUPLICATE KEY UPDATE like_total = like_total + (#{count});
+  </insert>
   <update id="updateByPrimaryKeySelective" parameterType="com.itpractice.xiaohongshu.count.biz.domain.dataobject.NoteCountDO">
     update t_note_count
     <set>
@@ -90,4 +95,5 @@
       comment_total = #{commentTotal,jdbcType=BIGINT}
     where id = #{id,jdbcType=BIGINT}
   </update>
+
 </mapper>

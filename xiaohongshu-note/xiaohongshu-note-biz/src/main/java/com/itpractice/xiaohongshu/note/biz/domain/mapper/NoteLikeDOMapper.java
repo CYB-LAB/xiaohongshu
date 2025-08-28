@@ -39,4 +39,5 @@ public interface NoteLikeDOMapper {
      * @return
      */
     int update2UnlikeByUserIdAndNoteId(NoteLikeDO noteLikeDO);
+
 }
