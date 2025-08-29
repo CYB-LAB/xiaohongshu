@@ -64,7 +64,8 @@
       </if>
     </trim>
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.itpractice.xiaohongshu.count.biz.domain.dataobject.NoteCollectionDO">
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.itpractice.xiaohongshu.count.biz.domain.dataobject.NoteCollectionDO">
     update t_note_collection
     <set>
       <if test="userId != null">

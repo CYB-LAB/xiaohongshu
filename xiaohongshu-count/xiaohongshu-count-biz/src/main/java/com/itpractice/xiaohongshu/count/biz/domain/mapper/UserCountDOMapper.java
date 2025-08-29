@@ -31,4 +31,5 @@ public interface UserCountDOMapper {
      * @return
      */
     int insertOrUpdateFollowingTotalByUserId(@Param("count") Integer count, @Param("userId") Long userId);
+
 }
