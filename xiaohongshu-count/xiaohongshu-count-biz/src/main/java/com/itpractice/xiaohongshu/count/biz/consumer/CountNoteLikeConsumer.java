@@ -71,7 +71,6 @@ public class CountNoteLikeConsumer implements RocketMQListener<String> {
                 .collect(Collectors.groupingBy(CountLikeUnlikeNoteMqDTO::getNoteId));
 
         // 按组汇总数据，统计出最终的计数
-        // key 为笔记 ID, value 为最终操作的计数
         List<AggregationCountLikeUnlikeNoteMqDTO> countList = Lists.newArrayList();
 
         for (Map.Entry<Long, List<CountLikeUnlikeNoteMqDTO>> entry : groupMap.entrySet()) {
