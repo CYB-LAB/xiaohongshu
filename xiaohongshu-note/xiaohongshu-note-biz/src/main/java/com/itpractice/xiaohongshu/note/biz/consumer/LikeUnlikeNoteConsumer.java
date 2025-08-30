@@ -5,7 +5,7 @@ import com.itpractice.framework.common.utils.JsonUtils;
 import com.itpractice.xiaohongshu.note.biz.constant.MQConstants;
 import com.itpractice.xiaohongshu.note.biz.domain.dataobject.NoteLikeDO;
 import com.itpractice.xiaohongshu.note.biz.domain.mapper.NoteLikeDOMapper;
-import com.itpractice.xiaohongshu.note.biz.model.vo.LikeUnlikeNoteMqDTO;
+import com.itpractice.xiaohongshu.note.biz.model.dto.LikeUnlikeNoteMqDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.SendCallback;

@@ -90,7 +90,12 @@
     VALUES (#{userId}, #{count})
     ON DUPLICATE KEY UPDATE following_total = following_total + (#{count});
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="com.itpractice.xiaohongshu.count.biz.domain.dataobject.UserCountDO">
+    <insert id="insertOrUpdateLikeTotalByUserId" parameterType="map">
+      INSERT INTO t_user_count (user_id, like_total)
+      VALUES (#{userId}, #{count})
+      ON DUPLICATE KEY UPDATE like_total = like_total + (#{count});
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.itpractice.xiaohongshu.count.biz.domain.dataobject.UserCountDO">
     update t_user_count
     <set>
       <if test="userId != null">

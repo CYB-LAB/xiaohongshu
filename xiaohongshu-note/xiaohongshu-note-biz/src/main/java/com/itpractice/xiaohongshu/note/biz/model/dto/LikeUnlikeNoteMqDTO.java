@@ -1,4 +1,4 @@
-package com.itpractice.xiaohongshu.note.biz.model.vo;
+package com.itpractice.xiaohongshu.note.biz.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,4 +29,9 @@ public class LikeUnlikeNoteMqDTO {
     private Integer type;
 
     private LocalDateTime createTime;
+
+    /**
+     * 笔记发布者 ID
+     */
+    private Long noteCreatorId;
 }
