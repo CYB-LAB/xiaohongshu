@@ -11,4 +11,9 @@ public interface MQConstants {
      * Topic: 计数 - 笔记点赞数
      */
     String TOPIC_COUNT_NOTE_LIKE = "CountNoteLikeTopic";
+
+    /**
+     * Topic: 关注数计数
+     */
+    String TOPIC_COUNT_FOLLOWING = "CountFollowingTopic";
 }
