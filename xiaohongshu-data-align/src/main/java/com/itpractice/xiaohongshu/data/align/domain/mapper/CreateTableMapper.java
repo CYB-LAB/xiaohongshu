@@ -6,7 +6,6 @@ import org.apache.ibatis.annotations.Mapper;
 /**
  * 自动创建表
  */
-@Mapper
 public interface CreateTableMapper {
 
     /**

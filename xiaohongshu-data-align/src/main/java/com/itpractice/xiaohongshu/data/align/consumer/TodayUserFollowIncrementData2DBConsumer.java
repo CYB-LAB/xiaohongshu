@@ -5,7 +5,7 @@ import com.itpractice.framework.common.utils.JsonUtils;
 import com.itpractice.xiaohongshu.data.align.constant.MQConstants;
 import com.itpractice.xiaohongshu.data.align.constant.RedisKeyConstants;
 import com.itpractice.xiaohongshu.data.align.constant.TableConstants;
-import com.itpractice.xiaohongshu.data.align.domain.mapper.InsertRecordMapper;
+import com.itpractice.xiaohongshu.data.align.domain.mapper.InsertMapper;
 import com.itpractice.xiaohongshu.data.align.model.dto.FollowUnfollowMqDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +39,7 @@ public class TodayUserFollowIncrementData2DBConsumer implements RocketMQListener
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
     @Resource
-    private InsertRecordMapper insertRecordMapper;
+    private InsertMapper insertRecordMapper;
 
     /**
      * 表总分片数
