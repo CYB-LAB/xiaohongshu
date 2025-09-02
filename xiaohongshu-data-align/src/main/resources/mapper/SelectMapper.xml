@@ -10,4 +10,51 @@
     <select id="selectCountFromFollowingTableByUserId" parameterType="map" resultType="int">
         select count(*) from t_following where user_id = #{userId}
     </select>
+    <select id="selectBatchFromDataAlignNoteLikeCountTempTable" resultType="java.lang.Long" parameterType="map">
+        select note_id from `t_data_align_note_like_count_temp_${tableNameSuffix}` order by id
+        limit #{batchSize}
+    </select>
+    <select id="selectCountFromNoteLikeTableByUserId" parameterType="map" resultType="int">
+        select count(*) from t_note_like where note_id = #{noteId} and status = 1
+    </select>
+    <select id="selectBatchFromDataAlignNotePublishCountTempTable" resultType="java.lang.Long" parameterType="map">
+        select user_id from `t_data_align_note_publish_count_temp_${tableNameSuffix}` order by id
+        limit #{batchSize}
+    </select>
+    <select id="selectCountFromNoteTableByUserId" resultType="java.lang.Integer">
+        select count(*) from t_note where creator_id = #{userId}
+    </select>
+    <select id="selectBatchFromDataAlignUserCollectCountTempTable" resultType="java.lang.Long" parameterType="map">
+        select user_id from `t_data_align_user_collect_count_temp_${tableNameSuffix}` order by id
+        limit #{batchSize}
+    </select>
+    <select id="selectUserCollectCountFromNoteCollectionTableByUserId" resultType="java.lang.Integer" parameterType="map">
+        select count(*) from t_note_collection where status = 1 and note_id in (
+            select note_id from t_note where creator_id = #{userId}
+            )
+    </select>
+    <select id="selectBatchFromDataAlignUserLikeCountTempTable" resultType="java.lang.Long" parameterType="map">
+        select user_id from `t_data_align_user_like_count_temp_${tableNameSuffix}` order by id
+        limit #{batchSize}
+    </select>
+    <select id="selectUserCountFromNoteLikeTableByUserId" resultType="java.lang.Integer" parameterType="map">
+        select count(*) from t_note_like where status = 1 and note_id in (
+            select note_id from t_note where creator_id = #{userId}
+            )
+    </select>
+    <select id="selectBatchFromDataAlignFansCountTempTable" resultType="java.lang.Long" parameterType="map">
+        select user_id from `t_data_align_fans_count_temp_${tableNameSuffix}` order by id
+        limit #{batchSize}
+    </select>
+    <select id="selectCountFromFansTableByUserId" resultType="java.lang.Integer" parameterType="map">
+        select count(*) from t_fans where user_id = #{userId}
+    </select>
+    <select id="selectBatchFromDataAlignNoteCollectCountTempTable" resultType="java.lang.Long" parameterType="map">
+        select note_id from `t_data_align_note_collect_count_temp_${tableNameSuffix}` order by id
+        limit #{batchSize}
+    </select>
+    <select id="selectNoteCollectCountFromNoteCollectionTableByNoteId" resultType="java.lang.Integer" parameterType="map">
+        select count(*) from t_note_collection where status = 1 and note_id = #{noteId}
+    </select>
+
 </mapper>

@@ -52,6 +52,32 @@ public class RedisKeyConstants {
      */
     public static final String BLOOM_TODAY_NOTE_COLLECT_USER_ID_LIST_KEY = "bloom:dataAlign:note:collect:userIds";
 
+    /**
+     * 笔记维度计数 Key 前缀
+     */
+    private static final String COUNT_NOTE_KEY_PREFIX = "count:note:";
+
+    /**
+     * Hash Field: 笔记点赞总数
+     */
+    public static final String FIELD_LIKE_TOTAL = "likeTotal";
+
+    /**
+     * Hash Field: 笔记发布总数
+     */
+    public static final String FIELD_NOTE_TOTAL = "noteTotal";
+
+    /**
+     * Hash Field: 用户获得收藏总数
+     */
+    public static final String FIELD_COLLECT_TOTAL = "collectTotal";
+
+    /**
+     * Hash Field: 粉丝总数
+     */
+    public static final String FIELD_FANS_TOTAL = "fansTotal";
+
+
 
 
 
@@ -125,5 +151,14 @@ public class RedisKeyConstants {
      */
     public static String buildBloomUserNoteCollectUserIdListKey(String date) {
         return BLOOM_TODAY_NOTE_COLLECT_USER_ID_LIST_KEY + date;
+    }
+
+    /**
+     * 构建笔记维度计数 Key
+     * @param noteId
+     * @return
+     */
+    public static String buildCountNoteKey(Long noteId) {
+        return COUNT_NOTE_KEY_PREFIX + noteId;
     }
 }
