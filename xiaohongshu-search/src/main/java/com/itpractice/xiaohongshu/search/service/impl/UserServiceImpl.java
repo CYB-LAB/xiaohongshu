@@ -3,6 +3,7 @@ package com.itpractice.xiaohongshu.search.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import com.google.common.collect.Lists;
 import com.itpractice.framework.common.response.PageResponse;
+import com.itpractice.framework.common.utils.NumberUtils;
 import com.itpractice.xiaohongshu.search.index.UserIndex;
 import com.itpractice.xiaohongshu.search.model.vo.SearchUserReqVO;
 import com.itpractice.xiaohongshu.search.model.vo.SearchUserRspVO;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author cyb
@@ -131,7 +133,7 @@ public class UserServiceImpl implements UserService {
                         .avatar(avatar)
                         .xiaohongshuId(xiaohongshuId)
                         .noteTotal(noteTotal)
-                        .fansTotal(fansTotal)
+                        .fansTotal(NumberUtils.formatNumberString(Objects.requireNonNullElse(fansTotal, 0)))
                         .highlightNickname(highlightedNickname)
                         .build();
                 searchUserRspVOS.add(searchUserRspVO);
