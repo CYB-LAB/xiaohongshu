@@ -1,6 +1,7 @@
 package com.itpractice.xiaohongshu.user.relation.biz.consumer;
 
 import com.google.common.util.concurrent.RateLimiter;
+import com.itpractice.framework.common.utils.DateUtils;
 import com.itpractice.framework.common.utils.JsonUtils;
 import com.itpractice.xiaohongshu.user.relation.biz.constant.MQConstants;
 import com.itpractice.xiaohongshu.user.relation.biz.constant.RedisKeyConstants;
@@ -12,7 +13,6 @@ import com.itpractice.xiaohongshu.user.relation.biz.enums.FollowUnfollowTypeEnum
 import com.itpractice.xiaohongshu.user.relation.biz.model.dto.CountFollowUnfollowMqDTO;
 import com.itpractice.xiaohongshu.user.relation.biz.model.dto.FollowUserMqDTO;
 import com.itpractice.xiaohongshu.user.relation.biz.model.dto.UnfollowUserMqDTO;
-import com.itpractice.xiaohongshu.user.relation.biz.util.DateUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.SendCallback;

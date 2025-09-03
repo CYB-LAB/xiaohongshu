@@ -1,4 +1,4 @@
-package com.itpractice.xiaohongshu.note.biz.util;
+package com.itpractice.framework.common.utils;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
