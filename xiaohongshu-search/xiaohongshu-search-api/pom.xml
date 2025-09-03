@@ -5,18 +5,21 @@
     <!--  指定父项目  -->
     <parent>
         <groupId>com.xiaohongshu</groupId>
-        <artifactId>xiaohongshu</artifactId>
+        <artifactId>xiaohongshu-search</artifactId>
         <version>${revision}</version>
     </parent>
 
     <!--  指定打包方式  -->
-    <packaging>pom</packaging>
-    <modules>
-        <module>xiaohongshu-search-api</module>
-        <module>xiaohongshu-search-biz</module>
-    </modules>
+    <packaging>jar</packaging>
 
-    <artifactId>xiaohongshu-search</artifactId>
+    <artifactId>xiaohongshu-search-api</artifactId>
     <name>${project.artifactId}</name>
-    <description>搜索服务</description>
+    <description>RPC层, 供其他服务调用</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.xiaohongshu</groupId>
+            <artifactId>xiaohongshu-common</artifactId>
+        </dependency>
+    </dependencies>
 </project>
