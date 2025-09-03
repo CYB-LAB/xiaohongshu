@@ -2,7 +2,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver # 指定数据库驱动类
     # 数据库连接信息
-    url: jdbc:mysql://127.0.0.1:3306/xiaohongshu?allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://127.0.0.1:3307/xiaohongshu?allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false&serverTimezone=Asia/Shanghai
     username: root # 数据库用户名
     password: sdPKf/NRoOjeN5gwug59+74k21bOTIiJW7+ZxtSN47dzQW225lu29Z++6ZIEkJCC4jqgMZXwRACdlQ66vkYX8A== # 数据库密码
     type: com.alibaba.druid.pool.DruidDataSource
