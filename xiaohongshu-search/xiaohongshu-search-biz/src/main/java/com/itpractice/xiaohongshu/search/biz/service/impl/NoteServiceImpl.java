@@ -5,17 +5,21 @@ import cn.hutool.core.collection.CollUtil;
 import com.google.common.collect.Lists;
 import com.itpractice.framework.common.constant.DateConstants;
 import com.itpractice.framework.common.response.PageResponse;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.framework.common.utils.DateUtils;
 import com.itpractice.framework.common.utils.NumberUtils;
+import com.itpractice.xiaohongshu.search.biz.domain.mapper.SelectMapper;
 import com.itpractice.xiaohongshu.search.biz.enums.NotePublishTimeRangeEnum;
 import com.itpractice.xiaohongshu.search.biz.enums.NoteSortTypeEnum;
 import com.itpractice.xiaohongshu.search.biz.index.NoteIndex;
 import com.itpractice.xiaohongshu.search.biz.model.vo.SearchNoteReqVO;
 import com.itpractice.xiaohongshu.search.biz.model.vo.SearchNoteRspVO;
 import com.itpractice.xiaohongshu.search.biz.service.NoteService;
+import com.itpractice.xiaohongshu.search.dto.RebuildNoteDocumentReqDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -52,6 +56,8 @@ public class NoteServiceImpl implements NoteService {
 
     @Resource
     private RestHighLevelClient restHighLevelClient;
+    @Resource
+    private SelectMapper selectMapper;
 
     /**
      * 搜索笔记
@@ -101,10 +107,8 @@ public class NoteServiceImpl implements NoteService {
             String startTime = null;
 
             switch (notePublishTimeRangeEnum) {
-                case DAY ->
-                        startTime = DateUtils.localDateTime2String(LocalDateTime.now().minusDays(1)); // 一天之前的时间
-                case WEEK ->
-                        startTime = DateUtils.localDateTime2String(LocalDateTime.now().minusWeeks(1)); // 一周之前的时间
+                case DAY -> startTime = DateUtils.localDateTime2String(LocalDateTime.now().minusDays(1)); // 一天之前的时间
+                case WEEK -> startTime = DateUtils.localDateTime2String(LocalDateTime.now().minusWeeks(1)); // 一周之前的时间
                 case HALF_YEAR ->
                         startTime = DateUtils.localDateTime2String(LocalDateTime.now().minusMonths(6)); // 半年之前的时间
             }
@@ -296,5 +300,38 @@ public class NoteServiceImpl implements NoteService {
         }
 
         return PageResponse.success(searchNoteRspVOS, pageNo, total);
+    }
+
+    /**
+     * 重建笔记文档
+     *
+     * @param rebuildNoteDocumentReqDTO 重建笔记索引请求参数
+     * @return 重建笔记索引结果
+     */
+    @Override
+    public Response<Long> rebuildDocument(RebuildNoteDocumentReqDTO rebuildNoteDocumentReqDTO) {
+        Long noteId = rebuildNoteDocumentReqDTO.getId();
+
+        // 从数据库查询 Elasticsearch 索引数据
+        List<Map<String, Object>> result = selectMapper.selectEsNoteIndexData(noteId, null);
+
+        // 遍历查询结果，将每条记录同步到 Elasticsearch
+        for (Map<String, Object> recordMap : result) {
+            // 创建索引请求对象，指定索引名称
+            IndexRequest indexRequest = new IndexRequest(NoteIndex.NAME);
+            // 设置文档的 ID，使用记录中的主键 “id” 字段值
+            indexRequest.id((String.valueOf(recordMap.get(NoteIndex.FIELD_NOTE_ID))));
+            // 设置文档的内容，使用查询结果的记录数据
+            indexRequest.source(recordMap);
+
+            // 将数据写入 Elasticsearch 索引
+            try {
+                restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
+            } catch (IOException e) {
+                log.error("==> 重建笔记文档失败: ", e);
+            }
+        }
+
+        return Response.success();
     }
 }

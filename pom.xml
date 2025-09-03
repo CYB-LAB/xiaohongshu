@@ -350,6 +350,12 @@
                 <artifactId>canal.protocol</artifactId>
                 <version>${canal.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.xiaohongshu</groupId>
+                <artifactId>xiaohongshu-search-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

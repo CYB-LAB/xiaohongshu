@@ -1,8 +1,10 @@
 package com.itpractice.xiaohongshu.search.biz.service;
 
 import com.itpractice.framework.common.response.PageResponse;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.search.biz.model.vo.SearchNoteReqVO;
 import com.itpractice.xiaohongshu.search.biz.model.vo.SearchNoteRspVO;
+import com.itpractice.xiaohongshu.search.dto.RebuildNoteDocumentReqDTO;
 
 
 /**
@@ -18,4 +20,11 @@ public interface NoteService {
      * @return
      */
     PageResponse<SearchNoteRspVO> searchNote(SearchNoteReqVO searchNoteReqVO);
+
+    /**
+     * 重建笔记文档
+     * @param rebuildNoteDocumentReqDTO
+     * @return
+     */
+    Response<Long> rebuildDocument(RebuildNoteDocumentReqDTO rebuildNoteDocumentReqDTO);
 }

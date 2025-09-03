@@ -6,6 +6,7 @@ import com.itpractice.xiaohongshu.data.align.constant.TableConstants;
 import com.itpractice.xiaohongshu.data.align.domain.mapper.DeleteMapper;
 import com.itpractice.xiaohongshu.data.align.domain.mapper.SelectMapper;
 import com.itpractice.xiaohongshu.data.align.domain.mapper.UpdateMapper;
+import com.itpractice.xiaohongshu.data.align.rpc.SearchRpcService;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import jakarta.annotation.Resource;
@@ -35,6 +36,8 @@ public class NoteLikeCountShardingXxlJob {
     private DeleteMapper deleteMapper;
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
+    @Resource
+    private SearchRpcService searchRpcService;
 
     /**
      * 分片广播任务
@@ -91,6 +94,9 @@ public class NoteLikeCountShardingXxlJob {
                         redisTemplate.opsForHash().put(redisKey, RedisKeyConstants.FIELD_LIKE_TOTAL, likeTotal);
                     }
                 }
+
+                // 远程RPC，调用搜索服务，重新构建文档
+                searchRpcService.rebuildNoteDocument(noteId);
 
             });
 

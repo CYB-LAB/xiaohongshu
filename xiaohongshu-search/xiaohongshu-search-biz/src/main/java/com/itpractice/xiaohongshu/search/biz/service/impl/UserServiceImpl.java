@@ -3,13 +3,17 @@ package com.itpractice.xiaohongshu.search.biz.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import com.google.common.collect.Lists;
 import com.itpractice.framework.common.response.PageResponse;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.framework.common.utils.NumberUtils;
+import com.itpractice.xiaohongshu.search.biz.domain.mapper.SelectMapper;
 import com.itpractice.xiaohongshu.search.biz.index.UserIndex;
 import com.itpractice.xiaohongshu.search.biz.model.vo.SearchUserReqVO;
 import com.itpractice.xiaohongshu.search.biz.model.vo.SearchUserRspVO;
 import com.itpractice.xiaohongshu.search.biz.service.UserService;
+import com.itpractice.xiaohongshu.search.dto.RebuildUserDocumentReqDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -24,13 +28,14 @@ import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 /**
  * @author cyb
- *
+ * <p>
  * 用户搜索服务实现类
  */
 @Service
@@ -39,6 +44,8 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     private RestHighLevelClient restHighLevelClient;
+    @Resource
+    private SelectMapper selectMapper;
 
     /**
      * 用户搜索
@@ -143,5 +150,37 @@ public class UserServiceImpl implements UserService {
         }
 
         return PageResponse.success(searchUserRspVOS, pageNo, total);
+    }
+
+    /**
+     * 用户文档重建
+     *
+     * @param rebuildUserDocumentReqDTO 用户文档重建请求参数
+     * @return 用户文档重建结果
+     */
+    @Override
+    public Response<Long> rebuildDocument(RebuildUserDocumentReqDTO rebuildUserDocumentReqDTO) {
+        Long userId = rebuildUserDocumentReqDTO.getId();
+
+        // 从数据库查询 Elasticsearch 索引数据
+        List<Map<String, Object>> result = selectMapper.selectEsUserIndexData(userId);
+
+        // 遍历查询结果，将每条记录同步到 Elasticsearch
+        for (Map<String, Object> recordMap : result) {
+            // 创建索引请求对象，指定索引名称
+            IndexRequest indexRequest = new IndexRequest(UserIndex.NAME);
+            // 设置文档的 ID，使用记录中的主键 “id” 字段值
+            indexRequest.id((String.valueOf(recordMap.get(UserIndex.FIELD_USER_ID))));
+            // 设置文档的内容，使用查询结果的记录数据
+            indexRequest.source(recordMap);
+            // 将数据写入 Elasticsearch 索引
+            try {
+                restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);
+            } catch (IOException e) {
+                log.error("==> 重建用户文档异常: ", e);
+            }
+        }
+
+        return Response.success();
     }
 }

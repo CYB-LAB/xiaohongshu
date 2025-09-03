@@ -3,9 +3,11 @@ package com.itpractice.xiaohongshu.search.biz.controller;
 
 import com.itpractice.framework.biz.operationlog.aspect.ApiOperationLog;
 import com.itpractice.framework.common.response.PageResponse;
+import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.search.biz.model.vo.SearchNoteReqVO;
 import com.itpractice.xiaohongshu.search.biz.model.vo.SearchNoteRspVO;
 import com.itpractice.xiaohongshu.search.biz.service.NoteService;
+import com.itpractice.xiaohongshu.search.dto.RebuildNoteDocumentReqDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -32,5 +34,12 @@ public class NoteController {
     @ApiOperationLog(description = "搜索笔记")
     public PageResponse<SearchNoteRspVO> searchNote(@RequestBody @Validated SearchNoteReqVO searchNoteReqVO) {
         return noteService.searchNote(searchNoteReqVO);
+    }
+
+    // ===================================== 对其他服务提供的接口 =====================================
+    @PostMapping("/note/document/rebuild")
+    @ApiOperationLog(description = "用户文档重建")
+    public Response<Long> rebuildDocument(@Validated @RequestBody RebuildNoteDocumentReqDTO rebuildNoteDocumentReqDTO) {
+        return noteService.rebuildDocument(rebuildNoteDocumentReqDTO);
     }
 }
