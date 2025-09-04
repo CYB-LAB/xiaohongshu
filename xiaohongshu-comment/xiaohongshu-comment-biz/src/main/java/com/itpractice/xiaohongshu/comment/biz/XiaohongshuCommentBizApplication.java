@@ -1,4 +1,4 @@
-package com.itpractice.xiaohongshu.comment.biz.domain;
+package com.itpractice.xiaohongshu.comment.biz;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;

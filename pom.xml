@@ -274,12 +274,6 @@
 
             <dependency>
                 <groupId>com.xiaohongshu</groupId>
-                <artifactId>xiaohongshu-user-api</artifactId>
-                <version>${revision}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.xiaohongshu</groupId>
                 <artifactId>xiaohongshu-kv-api</artifactId>
                 <version>${revision}</version>
             </dependency>

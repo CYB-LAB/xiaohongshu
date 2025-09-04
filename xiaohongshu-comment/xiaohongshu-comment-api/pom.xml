@@ -6,13 +6,12 @@
     <parent>
         <groupId>com.xiaohongshu</groupId>
         <artifactId>xiaohongshu-comment</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
 
 
     <!--  指定打包方式  -->
     <packaging>jar</packaging>
-
 
     <artifactId>xiaohongshu-comment-api</artifactId>
     <name>${project.artifactId}</name>

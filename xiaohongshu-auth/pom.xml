@@ -104,12 +104,6 @@
             <artifactId>xiaohongshu-user-api</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.xiaohongshu</groupId>
-            <artifactId>xiaohongshu-user-api</artifactId>
-        </dependency>
-
-
     </dependencies>
     <build>
         <plugins>
