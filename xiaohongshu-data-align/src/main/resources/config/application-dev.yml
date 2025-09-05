@@ -63,6 +63,10 @@ rocketmq:
   consumer:
     group: xiaohongshu_group
     pull-batch-size: 5 # 每次拉取的最大消息数
+  producer:
+    group: xiaohongshu_group
+    send-message-timeout: 3000 # 消息发送超时时间，默认 3s
+    max-message-size: 4096 # 消息最大大小
 xxl:
   job:
     adminAddresses: http://127.0.0.1:7777/xxl-job-admin # xxl-job 调度中心部署根地址，如调度中心集群部署存在多个地址则用逗号分隔

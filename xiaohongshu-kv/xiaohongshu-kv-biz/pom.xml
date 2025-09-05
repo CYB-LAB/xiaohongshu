@@ -55,6 +55,17 @@
             <artifactId>xiaohongshu-kv-api</artifactId>
         </dependency>
 
+        <!--   业务接口日志组件     -->
+        <dependency>
+            <groupId>com.xiaohongshu</groupId>
+            <artifactId>xiaohongshu-spring-boot-starter-biz-operationlog</artifactId>
+        </dependency>
+
+        <!--    Jackson组件    -->
+        <dependency>
+            <groupId>com.xiaohongshu</groupId>
+            <artifactId>xiaohongshu-spring-boot-starter-jackson</artifactId>
+        </dependency>
 
     </dependencies>
 </project>
