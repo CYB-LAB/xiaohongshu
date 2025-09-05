@@ -1,4 +1,4 @@
-package com.itpractice.xiaohongshu.kv.dto.api;
+package com.itpractice.xiaohongshu.kv.api;
 
 import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.kv.dto.req.AddNoteContentReqDTO;
@@ -6,7 +6,7 @@ import com.itpractice.xiaohongshu.kv.dto.req.DeleteNoteContentReqDTO;
 import com.itpractice.xiaohongshu.kv.dto.req.FindNoteContentReqDTO;
 import com.itpractice.xiaohongshu.kv.dto.rsp.FindNoteContentRspDTO;
 import org.springframework.cloud.openfeign.FeignClient;
-import com.itpractice.xiaohongshu.kv.dto.constant.ApiConstants;
+import com.itpractice.xiaohongshu.kv.constant.ApiConstants;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 

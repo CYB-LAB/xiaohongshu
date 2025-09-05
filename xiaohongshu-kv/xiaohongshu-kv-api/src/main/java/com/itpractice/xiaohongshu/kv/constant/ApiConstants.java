@@ -1,4 +1,4 @@
-package com.itpractice.xiaohongshu.kv.dto.constant;
+package com.itpractice.xiaohongshu.kv.constant;
 
 /**
  * @author cyb
