@@ -73,6 +73,7 @@
         <xxl-job.version>2.4.1</xxl-job.version>
         <elasticsearch.version>7.3.0</elasticsearch.version>
         <canal.version>1.1.7</canal.version>
+        <rocketmq-client.version>4.9.4</rocketmq-client.version>
     </properties>
 
     <!--  统一依赖管理  -->
@@ -350,6 +351,13 @@
                 <groupId>com.xiaohongshu</groupId>
                 <artifactId>xiaohongshu-search-api</artifactId>
                 <version>${revision}</version>
+            </dependency>
+
+            <!-- Rocket MQ 客户端 -->
+            <dependency>
+                <groupId>org.apache.rocketmq</groupId>
+                <artifactId>rocketmq-client</artifactId>
+                <version>${rocketmq-client.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
