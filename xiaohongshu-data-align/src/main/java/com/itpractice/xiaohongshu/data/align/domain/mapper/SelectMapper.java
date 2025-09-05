@@ -1,7 +1,9 @@
 package com.itpractice.xiaohongshu.data.align.domain.mapper;
 
+import com.itpractice.xiaohongshu.data.align.domain.dataobject.MqFailedMessageDO;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -137,4 +139,14 @@ public interface SelectMapper {
      * @return
      */
     int selectNoteCollectCountFromNoteCollectionTableByNoteId(Long noteId);
+
+    /**
+     * 查询待重试的消息
+     *
+     * @param currentTime
+     * @param batchSize
+     * @return
+     */
+    List<MqFailedMessageDO> selectPendingMessages(@Param("currentTime") LocalDateTime currentTime,
+                                                  @Param("batchSize") int batchSize);
 }

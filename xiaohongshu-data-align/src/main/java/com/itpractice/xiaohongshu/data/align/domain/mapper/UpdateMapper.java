@@ -1,5 +1,6 @@
 package com.itpractice.xiaohongshu.data.align.domain.mapper;
 
+import com.itpractice.xiaohongshu.data.align.domain.dataobject.MqFailedMessageDO;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -44,10 +45,18 @@ public interface UpdateMapper {
     /**
      * 更新 t_user_count 计数表用户粉丝数
      */
-    int updateUserFansTotalByUserId(Long userId, int fansTotal);
+    int updateUserFansTotalByUserId(@Param("userId") Long userId,
+                                    @Param("fansTotal") int fansTotal);
 
     /**
      * 更新 t_note_count 计数表笔记收藏数
      */
-    int updateNoteCollectTotalByNoteId(Long noteId, int noteCollectTotal);
+    int updateNoteCollectTotalByNoteId(@Param("noteId") Long noteId,
+                                       @Param("noteCollectTotal") int noteCollectTotal);
+
+
+    /**
+     * 更新 t_mq_failed_message 表
+     */
+    void updateRetryInfo(MqFailedMessageDO messageDO);
 }

@@ -56,5 +56,23 @@
     <select id="selectNoteCollectCountFromNoteCollectionTableByNoteId" resultType="java.lang.Integer" parameterType="map">
         select count(*) from t_note_collection where status = 1 and note_id = #{noteId}
     </select>
+    <select id="selectPendingMessages"
+            resultType="com.itpractice.xiaohongshu.data.align.domain.dataobject.MqFailedMessageDO">
+        select id,
+               topic,
+               message_body    AS messageBody,
+               status,
+               retry_count     AS retryCount,
+               max_retry_times AS maxRetryTimes,
+               next_retry_time AS nextRetryTime,
+               create_time     AS createTime,
+               update_time     AS updateTime,
+               error_msg       AS errorMsg
+        from t_mq_failed_message
+        where status = 0
+          and next_retry_time &lt;= #{currentTime}
+        order by next_retry_time
+        limit #{batchSize}
+    </select>
 
 </mapper>

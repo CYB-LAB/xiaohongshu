@@ -3,31 +3,59 @@
 <mapper namespace="com.itpractice.xiaohongshu.data.align.domain.mapper.UpdateMapper">
 
     <update id="updateUserFollowingTotalByUserId" parameterType="map">
-        update t_user_count set following_total = #{followingTotal}
+        update t_user_count
+        set following_total = #{followingTotal}
         where user_id = #{userId}
     </update>
     <update id="updateNoteLikeTotalByUserId" parameterType="map">
-        update t_note_count set like_total = #{noteLikeTotal}
+        update t_note_count
+        set like_total = #{noteLikeTotal}
         where note_id = #{noteId}
     </update>
     <update id="updateNotePublishTotalByNoteId" parameterType="map">
-        update t_user_count set note_total = #{notePublishTotal}
+        update t_user_count
+        set note_total = #{notePublishTotal}
         where user_id = #{userId}
     </update>
     <update id="updateUserCollectTotalByUserId" parameterType="map">
-        update t_user_count set collect_total = #{userCollectTotal}
+        update t_user_count
+        set collect_total = #{userCollectTotal}
         where user_id = #{userId}
     </update>
     <update id="updateUserLikeTotalByUserId" parameterType="map">
-        update t_user_count set like_total = #{userLikeTotal}
+        update t_user_count
+        set like_total = #{userLikeTotal}
         where user_id = #{userId}
     </update>
     <update id="updateUserFansTotalByUserId" parameterType="map">
-        update t_user_count set fans_total = #{fansTotal}
+        update t_user_count
+        set fans_total = #{fansTotal}
         where user_id = #{userId}
     </update>
     <update id="updateNoteCollectTotalByNoteId" parameterType="map">
-        update t_note_count set collect_total = #{noteCollectTotal}
+        update t_note_count
+        set collect_total = #{noteCollectTotal}
         where note_id = #{noteId}
+    </update>
+    <update id="updateRetryInfo" parameterType="com.itpractice.xiaohongshu.data.align.domain.dataobject.MqFailedMessageDO">
+        update t_mq_failed_message
+        <set>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="retryCount != null">
+                retry_count = #{retryCount},
+            </if>
+            <if test="nextRetryTime != null">
+                next_retry_time = #{nextRetryTime},
+            </if>
+            <if test="errorMsg != null">
+                error_msg = #{errorMsg},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
     </update>
 </mapper>
