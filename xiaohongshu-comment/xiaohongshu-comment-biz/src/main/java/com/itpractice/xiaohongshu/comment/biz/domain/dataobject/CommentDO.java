@@ -39,4 +39,12 @@ public class CommentDO {
     private String reason;
 
     private Integer status;
+
+    private Integer level;
+
+    private Long parentId;
+
+    private Long userId;
+
+
 }

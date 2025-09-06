@@ -105,6 +105,16 @@
             <artifactId>rocketmq-client</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.xiaohongshu</groupId>
+            <artifactId>xiaohongshu-distributed-id-generator-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.xiaohongshu</groupId>
+            <artifactId>xiaohongshu-kv-api</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
