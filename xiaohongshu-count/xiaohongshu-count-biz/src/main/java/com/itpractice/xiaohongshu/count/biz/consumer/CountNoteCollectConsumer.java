@@ -33,8 +33,8 @@ import java.util.stream.Collectors;
  */
 
 @Component
-@RocketMQMessageListener(consumerGroup = "xiaohongshu_group_" + MQConstants.TOPIC_COUNT_NOTE_COLLECT, // Group 组
-        topic = MQConstants.TOPIC_COUNT_NOTE_COLLECT // 主题 Topic
+@RocketMQMessageListener(consumerGroup = "xiaohongshu_group_" + MQConstants.TOPIC_COLLECT_OR_UNCOLLECT, // Group 组
+        topic = MQConstants.TOPIC_COLLECT_OR_UNCOLLECT // 主题 Topic
 )
 @Slf4j
 public class CountNoteCollectConsumer implements RocketMQListener<String> {

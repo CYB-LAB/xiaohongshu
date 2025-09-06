@@ -14,4 +14,6 @@ public interface NoteLikeDOMapper {
     int updateByPrimaryKeySelective(NoteLikeDO record);
 
     int updateByPrimaryKey(NoteLikeDO record);
+
+
 }

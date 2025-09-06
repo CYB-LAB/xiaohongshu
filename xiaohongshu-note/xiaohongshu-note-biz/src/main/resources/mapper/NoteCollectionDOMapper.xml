@@ -45,8 +45,12 @@
             resultType="com.itpractice.xiaohongshu.note.biz.domain.dataobject.NoteCollectionDO"
             resultMap="BaseResultMap" parameterType="map"
     >
-        select note_id, create_time from t_note_collection
-        where user_id = #{userId} and status = 1 order by create_time desc limit #{limit}
+        select note_id, create_time
+        from t_note_collection
+        where user_id = #{userId}
+          and status = 1
+        order by create_time desc
+        limit #{limit}
     </select>
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
         delete
@@ -99,8 +103,17 @@
     <insert id="insertOrUpdate" parameterType="com.itpractice.xiaohongshu.note.biz.domain.dataobject.NoteCollectionDO">
         INSERT INTO t_note_collection (user_id, note_id, create_time, status)
         VALUES (#{userId}, #{noteId}, #{createTime}, #{status})
+        ON DUPLICATE KEY UPDATE create_time = #{createTime},
+                                status      = #{status};
+    </insert>
+    <insert id="batchInsertOrUpdate" parameterType="list">
+        insert into t_note_collection (user_id, note_id, create_time, status)
+        values
+        <foreach collection="noteCollectionDOS" item="item" separator=",">
+            (#{item.userId}, #{item.noteId}, #{item.createTime}, #{item.status})
+        </foreach>
         ON DUPLICATE KEY UPDATE
-                             create_time = #{createTime}, status = #{status};
+        status = VALUES(status);
     </insert>
     <update id="updateByPrimaryKeySelective"
             parameterType="com.itpractice.xiaohongshu.note.biz.domain.dataobject.NoteCollectionDO">
@@ -130,7 +143,8 @@
             `status`    = #{status,jdbcType=TINYINT}
         where id = #{id,jdbcType=BIGINT}
     </update>
-    <update id="update2UnCollectByUserIdAndNoteId" parameterType="com.itpractice.xiaohongshu.note.biz.domain.dataobject.NoteCollectionDO">
+    <update id="update2UnCollectByUserIdAndNoteId"
+            parameterType="com.itpractice.xiaohongshu.note.biz.domain.dataobject.NoteCollectionDO">
         update t_note_collection
         set status      = #{status},
             create_time = #{createTime}
