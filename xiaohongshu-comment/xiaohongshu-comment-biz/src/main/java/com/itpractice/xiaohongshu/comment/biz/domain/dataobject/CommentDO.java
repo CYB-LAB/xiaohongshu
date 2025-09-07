@@ -64,4 +64,6 @@ public class CommentDO {
 
     private Long replyUserId;
 
+    private Long firstReplyCommentId;
+
 }
