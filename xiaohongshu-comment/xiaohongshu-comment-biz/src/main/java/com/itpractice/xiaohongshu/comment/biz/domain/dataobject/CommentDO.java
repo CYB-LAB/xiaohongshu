@@ -46,5 +46,22 @@ public class CommentDO {
 
     private Long userId;
 
+    private Long childCommentTotal;
+
+    private Long likeTotal;
+
+    private Long replyTotal;
+
+    private String contentUuid;
+
+    private Boolean isContentEmpty;
+
+    private String imageUrl;
+
+    private Boolean isTop;
+
+    private Long noteId;
+
+    private Long replyUserId;
 
 }
