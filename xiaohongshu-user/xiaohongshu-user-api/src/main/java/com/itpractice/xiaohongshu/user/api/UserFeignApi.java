@@ -44,7 +44,6 @@ public interface UserFeignApi {
     @PostMapping(value = PREFIX + "/password/update")
     Response<?> updatePassword(@RequestBody UpdateUserPasswordReqDTO updateUserPasswordReqDTO);
 
-    // 省略...
 
     /**
      * 根据用户 ID 查询用户信息

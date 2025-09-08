@@ -66,4 +66,8 @@ public class CommentDO {
 
     private Long firstReplyCommentId;
 
+    /**
+     * 热度值
+     */
+    private Double heat;
 }
