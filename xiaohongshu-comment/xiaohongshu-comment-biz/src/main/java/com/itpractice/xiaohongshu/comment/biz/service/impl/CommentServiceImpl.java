@@ -8,6 +8,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.itpractice.framework.common.constant.DateConstants;
 import com.itpractice.framework.common.response.PageResponse;
 import com.itpractice.framework.common.response.Response;
@@ -19,9 +20,7 @@ import com.itpractice.xiaohongshu.comment.biz.domain.dataobject.CommentDO;
 import com.itpractice.xiaohongshu.comment.biz.domain.mapper.CommentDOMapper;
 import com.itpractice.xiaohongshu.comment.biz.domain.mapper.NoteCountDOMapper;
 import com.itpractice.xiaohongshu.comment.biz.model.dto.PublishCommentMqDTO;
-import com.itpractice.xiaohongshu.comment.biz.model.vo.FindCommentItemRspVO;
-import com.itpractice.xiaohongshu.comment.biz.model.vo.FindCommentPageListReqVO;
-import com.itpractice.xiaohongshu.comment.biz.model.vo.PublishCommentReqVO;
+import com.itpractice.xiaohongshu.comment.biz.model.vo.*;
 import com.itpractice.xiaohongshu.comment.biz.retry.SendMqRetryHelper;
 import com.itpractice.xiaohongshu.comment.biz.rpc.DistributedIdGeneratorRpcService;
 import com.itpractice.xiaohongshu.comment.biz.rpc.KeyValueRpcService;
@@ -286,6 +285,142 @@ public class CommentServiceImpl implements CommentService {
         syncCommentDetail2LocalCache(commentRspVOS);
 
         return PageResponse.success(commentRspVOS, pageNo, count, pageSize);
+    }
+
+
+    /**
+     * 二级评论分页查询
+     * @param findChildCommentPageListReqVO
+     * @return
+     */
+    @Override
+    public PageResponse<FindChildCommentItemRspVO> findChildCommentPageList(FindChildCommentPageListReqVO findChildCommentPageListReqVO) {
+
+        // 父评论 ID
+        Long parentCommentId = findChildCommentPageListReqVO.getParentCommentId();
+        // 当前页码
+        Integer pageNo = findChildCommentPageListReqVO.getPageNo();
+        // 每页展示的二级评论数 (小红书 APP 中是一次查询 6 条)
+        long pageSize = 6;
+
+        // TODO: 先从缓存中查（后面补充）
+
+        // 查询一级评论下子评论的总数 (直接查询 t_comment 表的 child_comment_total 字段，提升查询性能, 避免 count(*))
+        Long count = commentDOMapper.selectChildCommentTotalById(parentCommentId);
+
+        // 若该一级评论不存在，或者子评论总数为 0
+        if (Objects.isNull(count) || count == 0) {
+            return PageResponse.success(null, pageNo, 0);
+        }
+
+        // 分页返参 VO
+        List<FindChildCommentItemRspVO> childCommentRspVOS = Lists.newArrayList();
+
+        // 计算分页查询的偏移量 offset (需要 +1，因为最早回复的二级评论已经被展示了)
+        long offset = PageResponse.getOffset(pageNo, pageSize) + 1;
+
+        // 分页查询子评论
+        List<CommentDO> childCommentDOS = commentDOMapper.selectChildPageList(parentCommentId, offset, pageSize);
+
+        // 调用 KV 服务需要的入参
+        List<FindCommentContentReqDTO> findCommentContentReqDTOS = Lists.newArrayList();
+        // 调用用户服务的入参
+        Set<Long> userIds = Sets.newHashSet();
+
+        // 归属的笔记 ID
+        Long noteId = null;
+
+        // 循环提取 RPC 调用需要的入参数据
+        for (CommentDO childCommentDO : childCommentDOS) {
+            noteId = childCommentDO.getNoteId();
+            // 构建调用 KV 服务批量查询评论内容的入参
+            boolean isContentEmpty = childCommentDO.getIsContentEmpty();
+            if (!isContentEmpty) {
+                FindCommentContentReqDTO findCommentContentReqDTO = FindCommentContentReqDTO.builder()
+                        .contentId(childCommentDO.getContentUuid())
+                        .yearMonth(DateConstants.DATE_FORMAT_Y_M.format(childCommentDO.getCreateTime()))
+                        .build();
+                findCommentContentReqDTOS.add(findCommentContentReqDTO);
+            }
+
+            // 构建调用用户服务批量查询用户信息的入参 (包含评论发布者、回复的目标用户)
+            userIds.add(childCommentDO.getUserId());
+
+            Long parentId = childCommentDO.getParentId();
+            Long replyCommentId = childCommentDO.getReplyCommentId();
+            // 若当前评论的 replyCommentId 不等于 parentId，则前端需要展示回复的哪个用户，如  “回复 犬小哈：”
+            if (!Objects.equals(parentId, replyCommentId)) {
+                userIds.add(childCommentDO.getReplyUserId());
+            }
+        }
+
+        // RPC: 调用 KV 服务，批量获取评论内容
+        List<FindCommentContentRspDTO> findCommentContentRspDTOS =
+                keyValueRpcService.batchFindCommentContent(noteId, findCommentContentReqDTOS);
+
+        // DTO 集合转 Map, 方便后续拼装数据
+        Map<String, String> commentUuidAndContentMap = null;
+        if (CollUtil.isNotEmpty(findCommentContentRspDTOS)) {
+            commentUuidAndContentMap = findCommentContentRspDTOS.stream()
+                    .collect(Collectors.toMap(FindCommentContentRspDTO::getContentId, FindCommentContentRspDTO::getContent));
+        }
+
+        // RPC: 调用用户服务，批量获取用户信息（头像、昵称等）
+        List<FindUserByIdRspDTO> findUserByIdRspDTOS = userRpcService.findByIds(userIds.stream().toList());
+
+        // DTO 集合转 Map, 方便后续拼装数据
+        Map<Long, FindUserByIdRspDTO> userIdAndDTOMap = null;
+        if (CollUtil.isNotEmpty(findUserByIdRspDTOS)) {
+            userIdAndDTOMap = findUserByIdRspDTOS.stream()
+                    .collect(Collectors.toMap(FindUserByIdRspDTO::getId, dto -> dto));
+        }
+
+        // DO 转 VO
+        for (CommentDO childCommentDO : childCommentDOS) {
+            // 构建 VO 实体类
+            Long userId = childCommentDO.getUserId();
+            FindChildCommentItemRspVO childCommentRspVO = FindChildCommentItemRspVO.builder()
+                    .userId(userId)
+                    .commentId(childCommentDO.getId())
+                    .imageUrl(childCommentDO.getImageUrl())
+                    .createTime(DateUtils.formatRelativeTime(childCommentDO.getCreateTime()))
+                    .likeTotal(childCommentDO.getLikeTotal())
+                    .build();
+
+            // 填充用户信息(包括评论发布者、回复的用户)
+            if (CollUtil.isNotEmpty(userIdAndDTOMap)) {
+                FindUserByIdRspDTO findUserByIdRspDTO = userIdAndDTOMap.get(userId);
+                // 评论发布者用户信息(头像、昵称)
+                if (Objects.nonNull(findUserByIdRspDTO)) {
+                    childCommentRspVO.setAvatar(findUserByIdRspDTO.getAvatar());
+                    childCommentRspVO.setNickname(findUserByIdRspDTO.getNickName());
+                }
+
+                // 评论回复的哪个
+                Long replyCommentId = childCommentDO.getReplyCommentId();
+                Long parentId = childCommentDO.getParentId();
+
+                if (Objects.nonNull(replyCommentId)
+                        && !Objects.equals(replyCommentId, parentId)) {
+                    Long replyUserId = childCommentDO.getReplyUserId();
+                    FindUserByIdRspDTO replyUser = userIdAndDTOMap.get(replyUserId);
+                    childCommentRspVO.setReplyUserName(replyUser.getNickName());
+                    childCommentRspVO.setReplyUserId(replyUser.getId());
+                }
+            }
+
+            // 评论内容
+            if (CollUtil.isNotEmpty(commentUuidAndContentMap)) {
+                String contentUuid = childCommentDO.getContentUuid();
+                if (StringUtils.isNotBlank(contentUuid)) {
+                    childCommentRspVO.setContent(commentUuidAndContentMap.get(contentUuid));
+                }
+            }
+
+            childCommentRspVOS.add(childCommentRspVO);
+        }
+
+        return PageResponse.success(childCommentRspVOS, pageNo, count, pageSize);
     }
 
     /**

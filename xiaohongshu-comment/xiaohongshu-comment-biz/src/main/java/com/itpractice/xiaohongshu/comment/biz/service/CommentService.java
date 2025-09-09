@@ -2,9 +2,7 @@ package com.itpractice.xiaohongshu.comment.biz.service;
 
 import com.itpractice.framework.common.response.PageResponse;
 import com.itpractice.framework.common.response.Response;
-import com.itpractice.xiaohongshu.comment.biz.model.vo.FindCommentItemRspVO;
-import com.itpractice.xiaohongshu.comment.biz.model.vo.FindCommentPageListReqVO;
-import com.itpractice.xiaohongshu.comment.biz.model.vo.PublishCommentReqVO;
+import com.itpractice.xiaohongshu.comment.biz.model.vo.*;
 
 public interface CommentService {
 
@@ -21,5 +19,12 @@ public interface CommentService {
      * @return
      */
     PageResponse<FindCommentItemRspVO> findCommentPageList(FindCommentPageListReqVO findCommentPageListReqVO);
+
+    /**
+     * 二级评论分页查询
+     * @param findChildCommentPageListReqVO
+     * @return
+     */
+    PageResponse<FindChildCommentItemRspVO> findChildCommentPageList(FindChildCommentPageListReqVO findChildCommentPageListReqVO);
 
 }
