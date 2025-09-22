@@ -7,10 +7,7 @@ import com.itpractice.xiaohongshu.kv.biz.domain.dataobject.CommentContentDO;
 import com.itpractice.xiaohongshu.kv.biz.domain.dataobject.CommentContentPrimaryKey;
 import com.itpractice.xiaohongshu.kv.biz.domain.repository.CommentContentRepository;
 import com.itpractice.xiaohongshu.kv.biz.service.CommentContentService;
-import com.itpractice.xiaohongshu.kv.dto.req.BatchAddCommentContentReqDTO;
-import com.itpractice.xiaohongshu.kv.dto.req.BatchFindCommentContentReqDTO;
-import com.itpractice.xiaohongshu.kv.dto.req.CommentContentReqDTO;
-import com.itpractice.xiaohongshu.kv.dto.req.FindCommentContentReqDTO;
+import com.itpractice.xiaohongshu.kv.dto.req.*;
 import com.itpractice.xiaohongshu.kv.dto.rsp.FindCommentContentRspDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -115,5 +112,22 @@ public class CommentContentServiceImpl implements CommentContentService {
         }
 
         return Response.success(findCommentContentRspDTOS);
+    }
+
+    /**
+     * 删除评论内容
+     * @param deleteCommentContentReqDTO
+     * @return
+     */
+    @Override
+    public Response<?> deleteCommentContent(DeleteCommentContentReqDTO deleteCommentContentReqDTO) {
+        Long noteId = deleteCommentContentReqDTO.getNoteId();
+        String yearMonth = deleteCommentContentReqDTO.getYearMonth();
+        String contentId = deleteCommentContentReqDTO.getContentId();
+
+        // 删除评论正文
+        commentContentRepository.deleteByPrimaryKeyNoteIdAndPrimaryKeyYearMonthAndPrimaryKeyContentId(noteId, yearMonth, UUID.fromString(contentId));
+
+        return Response.success();
     }
 }

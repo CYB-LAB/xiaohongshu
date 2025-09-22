@@ -3,6 +3,7 @@ package com.itpractice.xiaohongshu.kv.biz.service;
 import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.kv.dto.req.BatchAddCommentContentReqDTO;
 import com.itpractice.xiaohongshu.kv.dto.req.BatchFindCommentContentReqDTO;
+import com.itpractice.xiaohongshu.kv.dto.req.DeleteCommentContentReqDTO;
 
 /**
  * @author cyb
@@ -24,5 +25,13 @@ public interface CommentContentService {
      * @return
      */
     Response<?> batchFindCommentContent(BatchFindCommentContentReqDTO batchFindCommentContentReqDTO);
+
+    /**
+     * 删除评论内容
+     * @param deleteCommentContentReqDTO
+     * @return
+     */
+    Response<?> deleteCommentContent(DeleteCommentContentReqDTO deleteCommentContentReqDTO);
+
 
 }

@@ -54,6 +54,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -89,6 +90,8 @@ public class CommentServiceImpl implements CommentService {
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
     @Resource
     private CommentLikeDOMapper commentLikeDOMapper;
+    @Resource
+    private TransactionTemplate transactionTemplate;
 
     /**
      * 评论详情本地缓存
@@ -382,7 +385,7 @@ public class CommentServiceImpl implements CommentService {
         }
 
         // 若子评论 ZSET 缓存存在, 并且查询的是前 10 页的子评论
-        if (hasKey && offset < 6*10) {
+        if (hasKey && offset < 6 * 10) {
             // 使用 ZRevRange 获取某个一级评论下的子评论，按回复时间升序排列
             Set<Object> childCommentIds = redisTemplate.opsForZSet()
                     .rangeByScore(childCommentZSetKey, 0, Double.MAX_VALUE, offset, pageSize);
@@ -488,7 +491,7 @@ public class CommentServiceImpl implements CommentService {
                 int count = commentLikeDOMapper.selectCountByUserIdAndCommentId(userId, commentId);
 
                 // 保底1小小时+随机秒数
-                long expireSeconds = 60*60 + RandomUtil.randomInt(60*60);
+                long expireSeconds = 60 * 60 + RandomUtil.randomInt(60 * 60);
 
                 // 目标评论已经被点赞
                 if (count > 0) {
@@ -595,7 +598,7 @@ public class CommentServiceImpl implements CommentService {
                 // 异步初始化布隆过滤器
                 threadPoolTaskExecutor.submit(() -> {
                     // 保底1小时+随机秒数
-                    long expireSeconds = 60*60 + RandomUtil.randomInt(60*60);
+                    long expireSeconds = 60 * 60 + RandomUtil.randomInt(60 * 60);
                     batchAddCommentLike2BloomAndExpire(userId, expireSeconds, bloomUserCommentLikeListKey);
                 });
                 // 从数据库中校验评论是否被点赞
@@ -644,7 +647,108 @@ public class CommentServiceImpl implements CommentService {
     }
 
     /**
+     * 删除评论
+     *
+     * @param deleteCommentReqVO
+     * @return
+     */
+    @Override
+    public Response<?> deleteComment(DeleteCommentReqVO deleteCommentReqVO) {
+        // 被删除的评论 ID
+        Long commentId = deleteCommentReqVO.getCommentId();
+
+        // 1. 校验评论是否存在
+        CommentDO commentDO = commentDOMapper.selectByPrimaryKey(commentId);
+
+        if (Objects.isNull(commentDO)) {
+            throw new BizException(ResponseCodeEnum.COMMENT_NOT_FOUND);
+        }
+
+        // 2. 校验是否有权限删除
+        Long currUserId = LoginUserContextHolder.getUserId();
+        if (!Objects.equals(currUserId, commentDO.getUserId())) {
+            throw new BizException(ResponseCodeEnum.COMMENT_CANT_OPERATE);
+        }
+
+        // 3. 物理删除评论、评论内容
+        // 编程式事务，保证多个操作的原子性
+        transactionTemplate.execute(status -> {
+            try {
+                // 删除评论元数据
+                commentDOMapper.deleteByPrimaryKey(commentId);
+
+                // 删除评论内容
+                keyValueRpcService.deleteCommentContent(commentDO.getNoteId(),
+                        commentDO.getCreateTime(),
+                        commentDO.getContentUuid());
+
+                return null;
+            } catch (Exception ex) {
+                status.setRollbackOnly(); // 标记事务为回滚
+                log.error("", ex);
+                throw ex;
+            }
+        });
+
+        // 4. 删除 Redis 缓存（ZSet 和 String）
+        Integer level = commentDO.getLevel();
+        Long noteId = commentDO.getNoteId();
+        Long parentCommentId = commentDO.getParentId();
+
+        // 根据评论级别，构建对应的 ZSet Key
+        String redisZSetKey = Objects.equals(level, 1) ?
+                RedisKeyConstants.buildCommentListKey(noteId) : RedisKeyConstants.buildChildCommentListKey(parentCommentId);
+
+        // 使用 RedisTemplate 执行管道操作
+        redisTemplate.executePipelined(new SessionCallback<>() {
+            @Override
+            public Object execute(RedisOperations operations) {
+                // 删除 ZSet 中对应评论 ID
+                operations.opsForZSet().remove(redisZSetKey, commentId);
+
+                // 删除评论详情
+                operations.delete(RedisKeyConstants.buildCommentDetailKey(commentId));
+                return null;
+            }
+        });
+
+        // 5. 发布广播 MQ, 将本地缓存删除
+        rocketMQTemplate.asyncSend(MQConstants.TOPIC_DELETE_COMMENT_LOCAL_CACHE, commentId, new SendCallback() {
+            @Override
+            public void onSuccess(SendResult sendResult) {
+                log.info("==> 【删除评论详情本地缓存】MQ 发送成功，SendResult: {}", sendResult);
+            }
+
+            @Override
+            public void onException(Throwable throwable) {
+                log.error("==> 【删除评论详情本地缓存】MQ 发送异常: ", throwable);
+            }
+        });
+
+        // 6. 发送 MQ, 异步去更新计数、删除关联评论、热度值等
+        // 构建消息对象，并将 DO 转成 Json 字符串设置到消息体中
+        Message<String> message = MessageBuilder.withPayload(JsonUtils.toJsonString(commentDO))
+                .build();
+
+        // 异步发送 MQ 消息，提升接口响应速度
+        rocketMQTemplate.asyncSend(MQConstants.TOPIC_DELETE_COMMENT, message, new SendCallback() {
+            @Override
+            public void onSuccess(SendResult sendResult) {
+                log.info("==> 【评论删除】MQ 发送成功，SendResult: {}", sendResult);
+            }
+
+            @Override
+            public void onException(Throwable throwable) {
+                log.error("==> 【评论删除】MQ 发送异常: ", throwable);
+            }
+        });
+
+        return Response.success();
+    }
+
+    /**
      * 初始化评论点赞布隆过滤器
+     *
      * @param userId
      * @param expireSeconds
      * @param bloomUserCommentLikeListKey
@@ -707,7 +811,7 @@ public class CommentServiceImpl implements CommentService {
     /**
      * 设置子评论 VO 的计数
      *
-     * @param commentRspVOS 返参 VO 集合
+     * @param commentRspVOS     返参 VO 集合
      * @param expiredCommentIds 缓存中已失效的评论 ID 集合
      */
     private void setChildCommentCountData(List<FindChildCommentItemRspVO> commentRspVOS,
@@ -747,6 +851,7 @@ public class CommentServiceImpl implements CommentService {
 
     /**
      * 获取评论计数数据，并同步到 Redis 中
+     *
      * @param notExpiredCommentIds
      * @return
      */
@@ -823,7 +928,7 @@ public class CommentServiceImpl implements CommentService {
                             operations.opsForHash().putAll(key, fieldsMap);
 
                             // 设置随机过期时间 (5小时以内)
-                            long expireTime = 60*60 + RandomUtil.randomInt(4 * 60 * 60);
+                            long expireTime = 60 * 60 + RandomUtil.randomInt(4 * 60 * 60);
                             operations.expire(key, expireTime, TimeUnit.SECONDS);
                         });
                         return null;
@@ -836,6 +941,7 @@ public class CommentServiceImpl implements CommentService {
 
     /**
      * 获取子评论列表，并同步到 Redis 中
+     *
      * @param childCommentDOS
      * @param childCommentRspVOS
      */
@@ -956,6 +1062,7 @@ public class CommentServiceImpl implements CommentService {
 
     /**
      * 批量添加评论详情 Json 到 Redis 中
+     *
      * @param data
      */
     private void batchAddCommentDetailJson2Redis(Map<String, String> data) {
@@ -966,7 +1073,7 @@ public class CommentServiceImpl implements CommentService {
                 String jsonStr = JsonUtils.toJsonString(entry.getValue());
 
                 // 随机生成过期时间 (5小时以内)
-                int randomExpire = 60*60 + RandomUtil.randomInt(4 * 60 * 60);
+                int randomExpire = 60 * 60 + RandomUtil.randomInt(4 * 60 * 60);
 
                 // 批量写入并设置过期时间
                 connection.setEx(
@@ -981,11 +1088,12 @@ public class CommentServiceImpl implements CommentService {
 
     /**
      * 同步子评论到 Redis 中
+     *
      * @param parentCommentId
      * @param childCommentZSetKey
      */
     private void syncChildComments2Redis(Long parentCommentId, String childCommentZSetKey) {
-        List<CommentDO> childCommentDOS = commentDOMapper.selectChildCommentsByParentIdAndLimit(parentCommentId, 6*10);
+        List<CommentDO> childCommentDOS = commentDOMapper.selectChildCommentsByParentIdAndLimit(parentCommentId, 6 * 10);
         if (CollUtil.isNotEmpty(childCommentDOS)) {
             // 使用 Redis Pipeline 提升写入性能
             redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
@@ -1000,7 +1108,7 @@ public class CommentServiceImpl implements CommentService {
                 }
 
                 // 设置随机过期时间，（保底1小时 + 随机时间），单位：秒
-                int randomExpiryTime = 60*60 + RandomUtil.randomInt(4 * 60 * 60); // 5小时以内
+                int randomExpiryTime = 60 * 60 + RandomUtil.randomInt(4 * 60 * 60); // 5小时以内
                 redisTemplate.expire(childCommentZSetKey, randomExpiryTime, TimeUnit.SECONDS);
                 return null; // 无返回值
             });
@@ -1009,6 +1117,7 @@ public class CommentServiceImpl implements CommentService {
 
     /**
      * 同步评论计数到 Redis 中
+     *
      * @param countCommentKey
      * @param dbCount
      */
@@ -1021,7 +1130,7 @@ public class CommentServiceImpl implements CommentService {
                         .put(countCommentKey, RedisKeyConstants.FIELD_CHILD_COMMENT_TOTAL, dbCount);
 
                 // 随机过期时间 (保底1小时 + 随机时间)，单位：秒
-                long expireTime = 60*60 + RandomUtil.randomInt(4*60*60);
+                long expireTime = 60 * 60 + RandomUtil.randomInt(4 * 60 * 60);
                 operations.expire(countCommentKey, expireTime, TimeUnit.SECONDS);
                 return null;
             }

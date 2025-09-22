@@ -40,4 +40,11 @@ public interface CommentService {
      * @return
      */
     Response<?> unlikeComment(UnLikeCommentReqVO unLikeCommentReqVO);
+
+    /**
+     * 删除评论
+     * @param deleteCommentReqVO
+     * @return
+     */
+    Response<?> deleteComment(DeleteCommentReqVO deleteCommentReqVO);
 }
