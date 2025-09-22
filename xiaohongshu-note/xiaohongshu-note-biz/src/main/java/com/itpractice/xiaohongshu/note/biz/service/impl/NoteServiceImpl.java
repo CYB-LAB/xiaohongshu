@@ -1254,6 +1254,134 @@ public class NoteServiceImpl implements NoteService {
     }
 
     /**
+     * 查询笔记是否被当前用户点赞和收藏
+     * @param findNoteIsLikedAndCollectedReqVO
+     * @return
+     */
+    @Override
+    public Response<FindNoteIsLikedAndCollectedRspVO> isLikedAndCollectedData(FindNoteIsLikedAndCollectedReqVO findNoteIsLikedAndCollectedReqVO) {
+
+        Long noteId = findNoteIsLikedAndCollectedReqVO.getNoteId();
+
+        // 已登录的用户 ID
+        Long currUserId = LoginUserContextHolder.getUserId();
+
+        // 默认未点赞、未收藏
+        boolean isLiked = false;
+        boolean isCollected = false;
+
+        // 若当前用户已登录
+        if (Objects.nonNull((currUserId))) {
+            // 1. 校验是否点赞
+            isLiked = checkNoteIsLiked(noteId, currUserId);
+
+            // 2. 校验是否收藏
+            isCollected = checkNoteIsCollected(noteId, currUserId);
+        }
+
+        return Response.success(FindNoteIsLikedAndCollectedRspVO.builder()
+                .noteId(noteId)
+                .isLiked(isLiked)
+                .isCollected(isCollected)
+                .build());
+    }
+
+    /**
+     * 校验笔记是否被收藏
+     * @param noteId
+     * @param currUserId
+     * @return
+     */
+    private boolean checkNoteIsCollected(Long noteId, Long currUserId) {
+        // 是否收藏
+        boolean isCollected = false;
+
+        // Roaring Bitmap Key
+        String rbitmapUserNoteCollectListKey = RedisKeyConstants.buildRBitmapUserNoteCollectListKey(currUserId);
+
+        DefaultRedisScript<Long> script = new DefaultRedisScript<>();
+        // Lua 脚本路径
+        script.setScriptSource(new ResourceScriptSource(new ClassPathResource("/lua/rbitmap_note_collect_only_check.lua")));
+        // 返回值类型
+        script.setResultType(Long.class);
+
+        // 执行 Lua 脚本，拿到返回结果
+        Long result = redisTemplate.execute(script, Collections.singletonList(rbitmapUserNoteCollectListKey), noteId);
+
+        NoteCollectLuaResultEnum noteCollectLuaResultEnum = NoteCollectLuaResultEnum.valueOf(result);
+
+        switch (noteCollectLuaResultEnum) {
+            // Redis 中 Roaring Bitmap 不存在
+            case NOT_EXIST -> {
+                // 从数据库中校验笔记是否被收藏，并异步初始化布隆过滤器，设置过期时间
+                int count = noteCollectionDOMapper.selectCountByUserIdAndNoteId(currUserId, noteId);
+
+                // 保底1天+随机秒数
+                long expireSeconds = 60*60*24 + RandomUtil.randomInt(60*60*24);
+
+                // 目标笔记已经被收藏
+                if (count > 0) {
+                    // 异步初始化布隆过滤器
+                    threadPoolTaskExecutor.submit(() ->
+                            batchAddNoteCollect2RBitmapAndExpire(currUserId, expireSeconds, rbitmapUserNoteCollectListKey));
+                    isCollected = true;
+                }
+            }
+            // 目标笔记已经被收藏
+            case NOTE_COLLECTED -> isCollected = true;
+        }
+
+        return isCollected;
+    }
+
+    /**
+     * 校验笔记是否被点赞
+     * @param noteId
+     * @param currUserId
+     * @return
+     */
+    private boolean checkNoteIsLiked(Long noteId, Long currUserId) {
+        // 是否点赞
+        boolean isLiked = false;
+
+        // Roaring Bitmap Key
+        String rbitmapUserNoteLikeListKey = RedisKeyConstants.buildRBitmapUserNoteLikeListKey(currUserId);
+
+        DefaultRedisScript<Long> script = new DefaultRedisScript<>();
+        // Lua 脚本路径
+        script.setScriptSource(new ResourceScriptSource(new ClassPathResource("/lua/rbitmap_note_like_only_check.lua")));
+        // 返回值类型
+        script.setResultType(Long.class);
+
+        // 执行 Lua 脚本，拿到返回结果
+        Long result = redisTemplate.execute(script, Collections.singletonList(rbitmapUserNoteLikeListKey), noteId);
+
+        NoteLikeLuaResultEnum noteLikeLuaResultEnum = NoteLikeLuaResultEnum.valueOf(result);
+
+        switch (noteLikeLuaResultEnum) {
+            // Redis 中 Roaring Bitmap 不存在
+            case NOT_EXIST -> {
+                // 从数据库中校验笔记是否被点赞，并异步初始化 Roaring Bitmap，设置过期时间
+                int count = noteLikeDOMapper.selectCountByUserIdAndNoteId(currUserId, noteId);
+
+                // 保底1天+随机秒数
+                long expireSeconds = 60*60*24 + RandomUtil.randomInt(60*60*24);
+
+                // 目标笔记已经被点赞
+                if (count > 0) {
+                    // 异步初始化 Roaring Bitmap
+                    threadPoolTaskExecutor.submit(() ->
+                            batchAddNoteLike2RBitmapAndExpire(currUserId, expireSeconds, rbitmapUserNoteLikeListKey));
+                    isLiked = true;
+                }
+            }
+            case NOTE_LIKED -> isLiked = true; // Roaring Bitmap 判断已点赞
+        }
+
+        return isLiked;
+    }
+
+    /**
      * 异步初始化布隆过滤器
      * @param userId
      * @param expireSeconds
