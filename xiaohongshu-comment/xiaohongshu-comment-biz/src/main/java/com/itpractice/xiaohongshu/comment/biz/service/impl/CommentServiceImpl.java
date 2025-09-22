@@ -747,6 +747,15 @@ public class CommentServiceImpl implements CommentService {
     }
 
     /**
+     * 删除评论详情本地缓存
+     * @param commentId
+     */
+    @Override
+    public void deleteCommentLocalCache(Long commentId) {
+        LOCAL_CACHE.invalidate(commentId);
+    }
+
+    /**
      * 初始化评论点赞布隆过滤器
      *
      * @param userId
