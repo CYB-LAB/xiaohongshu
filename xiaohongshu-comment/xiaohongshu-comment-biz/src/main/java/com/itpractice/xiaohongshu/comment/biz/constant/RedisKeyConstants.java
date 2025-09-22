@@ -34,6 +34,21 @@ public class RedisKeyConstants {
     private static final String COMMENT_DETAIL_KEY_PREFIX = "comment:detail:";
 
     /**
+     * 评论维度计数 Key 前缀
+     */
+    private static final String COUNT_COMMENT_KEY_PREFIX = "count:comment:";
+
+    /**
+     * Hash Field: 子评论总数
+     */
+    public static final String FIELD_CHILD_COMMENT_TOTAL = "childCommentTotal";
+
+    /**
+     * Hash Field: 点赞总数
+     */
+    public static final String FIELD_LIKE_TOTAL = "likeTotal";
+
+    /**
      * 构建完整 KEY
      * @param commentId
      * @return
@@ -68,6 +83,15 @@ public class RedisKeyConstants {
      */
     public static String buildCommentDetailKey(Object commentId) {
         return COMMENT_DETAIL_KEY_PREFIX + commentId;
+    }
+
+    /**
+     * 构建评论维度计数 Key
+     * @param commentId
+     * @return
+     */
+    public static String buildCountCommentKey(Long commentId) {
+        return COUNT_COMMENT_KEY_PREFIX + commentId;
     }
 }
 
