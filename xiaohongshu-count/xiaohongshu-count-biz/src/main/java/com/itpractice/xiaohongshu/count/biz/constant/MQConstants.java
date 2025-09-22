@@ -70,7 +70,7 @@ public interface MQConstants {
     /**
      * Topic: 计数 - 笔记收藏数
      */
-    String TOPIC_COLLECT_OR_UNCOLLECT = "CollectUncollectTopic";
+    String TOPIC_COLLECT_OR_UNCOLLECT = "CollectUnCollectTopic";
 
     /**
      * Topic: 笔记评论总数计数
