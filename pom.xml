@@ -359,6 +359,12 @@
                 <artifactId>rocketmq-client</artifactId>
                 <version>${rocketmq-client.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>com.xiaohongshu</groupId>
+                <artifactId>xiaohongshu-count-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
