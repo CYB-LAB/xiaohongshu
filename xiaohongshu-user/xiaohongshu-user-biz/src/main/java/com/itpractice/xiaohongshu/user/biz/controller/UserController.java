@@ -3,6 +3,8 @@ package com.itpractice.xiaohongshu.user.biz.controller;
 
 import com.itpractice.framework.biz.operationlog.aspect.ApiOperationLog;
 import com.itpractice.framework.common.response.Response;
+import com.itpractice.xiaohongshu.user.biz.model.vo.FindUserProfileReqVO;
+import com.itpractice.xiaohongshu.user.biz.model.vo.FindUserProfileRspVO;
 import com.itpractice.xiaohongshu.user.biz.model.vo.UpdateUserInfoReqVO;
 import com.itpractice.xiaohongshu.user.biz.service.UserService;
 import com.itpractice.xiaohongshu.user.dto.req.*;
@@ -38,6 +40,16 @@ public class UserController {
         return userService.updateUserInfo(updateUserInfoReqVO);
     }
 
+    /**
+     * 获取用户主页信息
+     *
+     * @return
+     */
+    @PostMapping(value = "/profile")
+    public Response<FindUserProfileRspVO> findUserProfile(@Validated @RequestBody FindUserProfileReqVO findUserProfileReqVO) {
+        return userService.findUserProfile(findUserProfileReqVO);
+    }
+
     // ===================================== 对其他服务提供的接口 =====================================
     @PostMapping("/register")
     @ApiOperationLog(description = "用户注册")
@@ -68,4 +80,5 @@ public class UserController {
     public Response<List<FindUserByIdRspDTO>> findByIds(@Validated @RequestBody FindUsersByIdsReqDTO findUsersByIdsReqDTO) {
         return userService.findByIds(findUsersByIdsReqDTO);
     }
+
 }

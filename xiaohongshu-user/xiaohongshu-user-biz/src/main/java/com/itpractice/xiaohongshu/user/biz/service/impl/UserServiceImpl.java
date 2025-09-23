@@ -7,9 +7,13 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.itpractice.framework.common.exception.BizException;
-import com.itpractice.framework.common.utils.JsonUtils;
-import com.itpractice.framework.common.utils.ParamUtils;
 import com.itpractice.framework.common.response.Response;
+import com.itpractice.framework.common.utils.DateUtils;
+import com.itpractice.framework.common.utils.JsonUtils;
+import com.itpractice.framework.common.utils.NumberUtils;
+import com.itpractice.framework.common.utils.ParamUtils;
+import com.itpractice.xiaohongshu.count.dto.FindUserCountsByIdRspDTO;
+import com.itpractice.xiaohongshu.framework.biz.context.holder.LoginUserContextHolder;
 import com.itpractice.xiaohongshu.oss.api.FileFeignApi;
 import com.itpractice.xiaohongshu.user.biz.constant.RedisKeyConstants;
 import com.itpractice.xiaohongshu.user.biz.constant.RoleConstants;
@@ -23,14 +27,16 @@ import com.itpractice.xiaohongshu.user.biz.enums.DeletedEnum;
 import com.itpractice.xiaohongshu.user.biz.enums.ResponseCodeEnum;
 import com.itpractice.xiaohongshu.user.biz.enums.SexEnum;
 import com.itpractice.xiaohongshu.user.biz.enums.StatusEnum;
+import com.itpractice.xiaohongshu.user.biz.model.vo.FindUserProfileReqVO;
+import com.itpractice.xiaohongshu.user.biz.model.vo.FindUserProfileRspVO;
 import com.itpractice.xiaohongshu.user.biz.model.vo.UpdateUserInfoReqVO;
+import com.itpractice.xiaohongshu.user.biz.rpc.CountRpcService;
 import com.itpractice.xiaohongshu.user.biz.rpc.DistributedIdGeneratorRpcService;
 import com.itpractice.xiaohongshu.user.biz.rpc.OssRpcService;
 import com.itpractice.xiaohongshu.user.biz.service.UserService;
 import com.itpractice.xiaohongshu.user.dto.req.*;
 import com.itpractice.xiaohongshu.user.dto.resp.FindUserByIdRspDTO;
 import com.itpractice.xiaohongshu.user.dto.resp.FindUserByPhoneRspDTO;
-import com.itpractice.xiaohongshu.framework.biz.context.holder.LoginUserContextHolder;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -57,27 +63,32 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     private UserDOMapper userDOMapper;
-
     @Resource
     private FileFeignApi fileFeignApi;
-
     @Resource
     private OssRpcService ossRpcService;
-
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
-
     @Resource
     private UserRoleDOMapper userRoleDOMapper;
-
     @Resource
     private RoleDOMapper roleDOMapper;
-
     @Resource
     private DistributedIdGeneratorRpcService distributedIdGeneratorRpcService;
-
     @Resource(name = "taskExecutor")
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+    @Resource
+    private CountRpcService countRpcService;
+
+    /**
+     * 用户主页信息本地缓存
+     */
+    private static final Cache<Long, FindUserProfileRspVO> PROFILE_LOCAL_CACHE = Caffeine.newBuilder()
+            .initialCapacity(10000) // 设置初始容量为 10000 个条目
+            .maximumSize(10000) // 设置缓存的最大容量为 10000 个条目
+            .expireAfterWrite(5, TimeUnit.MINUTES) // 设置缓存条目在写入后 5 分钟过期
+            .build();
+
 
     /**
      * 用户信息本地缓存
@@ -486,5 +497,116 @@ public class UserServiceImpl implements UserService {
         }
 
         return Response.success(findUserByIdRspDTOS);
+    }
+
+    /**
+     * 查询用户信息
+     * @param findUserProfileReqVO
+     * @return
+     */
+    @Override
+    public Response<FindUserProfileRspVO> findUserProfile(FindUserProfileReqVO findUserProfileReqVO) {
+        // 要查询的用户 ID
+        Long userId = findUserProfileReqVO.getUserId();
+
+        // 若入参中用户 ID 为空，则查询当前登录用户
+        if (Objects.isNull(userId)) {
+            userId = LoginUserContextHolder.getUserId();
+        }
+
+        // 1. 优先查本地缓存
+        FindUserProfileRspVO userProfileLocalCache = PROFILE_LOCAL_CACHE.getIfPresent(userId);
+        if (Objects.nonNull(userProfileLocalCache)) {
+            log.info("## 用户主页信息命中本地缓存: {}", JsonUtils.toJsonString(userProfileLocalCache));
+            return Response.success(userProfileLocalCache);
+        }
+
+        // 2. 优先查询 Redis 缓存
+        String userProfileRedisKey = RedisKeyConstants.buildUserProfileKey(userId);
+
+        String userProfileJson = (String) redisTemplate.opsForValue().get(userProfileRedisKey);
+
+        if (StringUtils.isNotBlank(userProfileJson)) {
+            FindUserProfileRspVO findUserProfileRspVO = JsonUtils.parseObject(userProfileJson, FindUserProfileRspVO.class);
+            // 异步同步到本地缓存
+            syncUserProfile2LocalCache(userId, findUserProfileRspVO);
+            return Response.success(findUserProfileRspVO);
+        }
+
+        // 3. 再查询数据库
+        UserDO userDO = userDOMapper.selectByPrimaryKey(userId);
+
+        if (Objects.isNull(userDO)) {
+            throw new BizException(ResponseCodeEnum.USER_NOT_FOUND);
+        }
+
+        // 构建返参 VO
+        FindUserProfileRspVO findUserProfileRspVO = FindUserProfileRspVO.builder()
+                .userId(userDO.getId())
+                .avatar(userDO.getAvatar())
+                .nickname(userDO.getNickname())
+                .xiaohongshuId(userDO.getXiaohongshuId())
+                .sex(userDO.getSex())
+                .introduction(userDO.getIntroduction())
+                .build();
+
+        // 计算年龄
+        LocalDate birthday = userDO.getBirthday();
+        findUserProfileRspVO.setAge(Objects.isNull(birthday) ? 0 : DateUtils.calculateAge(birthday));
+
+
+        // RPC: Feign 调用计数服务
+        // 关注数、粉丝数、收藏与点赞总数；发布的笔记数，获得的点赞数、收藏数
+        FindUserCountsByIdRspDTO findUserCountsByIdRspDTO = countRpcService.findUserCountById(userId);
+
+        if (Objects.nonNull(findUserCountsByIdRspDTO)) {
+            Long fansTotal = findUserCountsByIdRspDTO.getFansTotal();
+            Long followingTotal = findUserCountsByIdRspDTO.getFollowingTotal();
+            Long likeTotal = findUserCountsByIdRspDTO.getLikeTotal();
+            Long collectTotal = findUserCountsByIdRspDTO.getCollectTotal();
+            Long noteTotal = findUserCountsByIdRspDTO.getNoteTotal();
+
+            findUserProfileRspVO.setFansTotal(NumberUtils.formatNumberString(fansTotal));
+            findUserProfileRspVO.setFollowingTotal(NumberUtils.formatNumberString(followingTotal));
+            findUserProfileRspVO.setLikeAndCollectTotal(NumberUtils.formatNumberString(likeTotal + collectTotal));
+            findUserProfileRspVO.setNoteTotal(NumberUtils.formatNumberString(noteTotal));
+            findUserProfileRspVO.setLikeTotal(NumberUtils.formatNumberString(likeTotal));
+            findUserProfileRspVO.setCollectTotal(NumberUtils.formatNumberString(collectTotal));
+        }
+
+        // 异步同步到 Redis 中
+        syncUserProfile2Redis(userProfileRedisKey, findUserProfileRspVO);
+        // 异步同步到本地缓存
+        syncUserProfile2LocalCache(userId, findUserProfileRspVO);
+
+        return Response.success(findUserProfileRspVO);
+    }
+
+    /**
+     * 异步同步到本地缓存
+     *
+     * @param userId
+     * @param findUserProfileRspVO
+     */
+    private void syncUserProfile2LocalCache(Long userId, FindUserProfileRspVO findUserProfileRspVO) {
+        threadPoolTaskExecutor.submit(() -> {
+            PROFILE_LOCAL_CACHE.put(userId, findUserProfileRspVO);
+        });
+    }
+
+    /**
+     * 异步同步到 Redis 中
+     *
+     * @param userProfileRedisKey
+     * @param findUserProfileRspVO
+     */
+    private void syncUserProfile2Redis(String userProfileRedisKey, FindUserProfileRspVO findUserProfileRspVO) {
+        threadPoolTaskExecutor.submit(() -> {
+            // 设置随机过期时间 (2小时以内)
+            long expireTime = 60*60 + RandomUtil.randomInt(60 * 60);
+
+            // 将 VO 转为 Json 字符串写入到 Redis 中
+            redisTemplate.opsForValue().set(userProfileRedisKey, JsonUtils.toJsonString(findUserProfileRspVO), expireTime, TimeUnit.SECONDS);
+        });
     }
 }

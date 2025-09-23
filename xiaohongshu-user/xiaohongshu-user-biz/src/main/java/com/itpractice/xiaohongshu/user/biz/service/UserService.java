@@ -1,6 +1,8 @@
 package com.itpractice.xiaohongshu.user.biz.service;
 
 import com.itpractice.framework.common.response.Response;
+import com.itpractice.xiaohongshu.user.biz.model.vo.FindUserProfileReqVO;
+import com.itpractice.xiaohongshu.user.biz.model.vo.FindUserProfileRspVO;
 import com.itpractice.xiaohongshu.user.biz.model.vo.UpdateUserInfoReqVO;
 import com.itpractice.xiaohongshu.user.dto.req.*;
 import com.itpractice.xiaohongshu.user.dto.resp.FindUserByIdRspDTO;
@@ -62,4 +64,11 @@ public interface UserService {
      * @return
      */
     Response<List<FindUserByIdRspDTO>> findByIds(FindUsersByIdsReqDTO findUsersByIdsReqDTO);
+
+    /**
+     * 获取用户主页信息
+     *
+     * @return
+     */
+    Response<FindUserProfileRspVO> findUserProfile(FindUserProfileReqVO findUserProfileReqVO);
 }
