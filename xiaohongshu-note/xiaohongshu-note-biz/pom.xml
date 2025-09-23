@@ -131,6 +131,10 @@
             <artifactId>rocketmq-client</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.xiaohongshu</groupId>
+            <artifactId>xiaohongshu-count-api</artifactId>
+        </dependency>
 
     </dependencies>
 

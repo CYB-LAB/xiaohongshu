@@ -47,4 +47,14 @@ public interface NoteLikeDOMapper {
      */
     int batchInsertOrUpdate(@Param("noteLikeDOS") List<NoteLikeDO> noteLikeDOS);
 
+    /**
+     * 查询某用户，对于一批量笔记的已点赞记录
+     * @param userId
+     * @param noteIds
+     * @return
+     */
+    List<NoteLikeDO> selectByUserIdAndNoteIds(@Param("userId") Long userId,
+                                              @Param("noteIds") List<Long> noteIds);
+
+
 }
