@@ -16,6 +16,7 @@ import com.itpractice.xiaohongshu.count.dto.FindNoteCountsByIdRspDTO;
 import com.itpractice.xiaohongshu.framework.biz.context.holder.LoginUserContextHolder;
 import com.itpractice.xiaohongshu.note.biz.constant.MQConstants;
 import com.itpractice.xiaohongshu.note.biz.constant.RedisKeyConstants;
+import com.itpractice.xiaohongshu.note.biz.convert.NoteConvert;
 import com.itpractice.xiaohongshu.note.biz.domain.dataobject.NoteCollectionDO;
 import com.itpractice.xiaohongshu.note.biz.domain.dataobject.NoteDO;
 import com.itpractice.xiaohongshu.note.biz.domain.dataobject.NoteLikeDO;
@@ -27,6 +28,7 @@ import com.itpractice.xiaohongshu.note.biz.enums.*;
 import com.itpractice.xiaohongshu.note.biz.model.dto.CollectUnCollectNoteMqDTO;
 import com.itpractice.xiaohongshu.note.biz.model.dto.LikeUnlikeNoteMqDTO;
 import com.itpractice.xiaohongshu.note.biz.model.dto.NoteOperateMqDTO;
+import com.itpractice.xiaohongshu.note.biz.model.dto.PublishNoteDTO;
 import com.itpractice.xiaohongshu.note.biz.model.vo.*;
 import com.itpractice.xiaohongshu.note.biz.rpc.CountRpcService;
 import com.itpractice.xiaohongshu.note.biz.rpc.DistributedIdGeneratorRpcService;
@@ -40,6 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.client.producer.TransactionSendResult;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -151,13 +154,13 @@ public class NoteServiceImpl implements NoteService {
             isContentEmpty = false;
             // 生成笔记内容 UUID
             contentUuid = UUID.randomUUID().toString();
-            // RPC: 调用 KV 键值服务，存储短文本
-            boolean isSavedSuccess = keyValueRpcService.saveNoteContent(contentUuid, content);
-
-            // 若存储失败，抛出业务异常，提示用户发布笔记失败
-            if (!isSavedSuccess) {
-                throw new BizException(ResponseCodeEnum.NOTE_PUBLISH_FAIL);
-            }
+//            // RPC: 调用 KV 键值服务，存储短文本
+//            boolean isSavedSuccess = keyValueRpcService.saveNoteContent(contentUuid, content);
+//
+//            // 若存储失败，抛出业务异常，提示用户发布笔记失败
+//            if (!isSavedSuccess) {
+//                throw new BizException(ResponseCodeEnum.NOTE_PUBLISH_FAIL);
+//            }
         }
 
         // 话题
@@ -190,22 +193,41 @@ public class NoteServiceImpl implements NoteService {
                 .contentUuid(contentUuid)
                 .build();
 
+        // 若笔记正文未填写，不用发事务消息
+        if (StringUtils.isBlank(content)) {
+            processPublishContentEmptyNote(creatorId, noteDO, snowflakeIdId);
+            return Response.success();
+        }
+
+        // 发送事务消息
+        // DO 转 DTO
+        PublishNoteDTO publishNoteDTO = NoteConvert.INSTANCE.convertDO2DTO(noteDO);
+        publishNoteDTO.setContent(content);
+
+        // 构建消息内容
+        Message<String> message = MessageBuilder.withPayload(JsonUtils.toJsonString(publishNoteDTO)).build();
+        // 发送事务消息
+        TransactionSendResult transactionSendResult = rocketMQTemplate.sendMessageInTransaction(MQConstants.TOPIC_PUBLISH_NOTE_TRANSACTION, message, null);
+
+        log.info("## 事务消息发送结果: {}", transactionSendResult.getLocalTransactionState());
+
+        return Response.success();
+    }
+
+    /**
+     * 处理笔记正文为空的情况
+     * @param creatorId
+     * @param noteDO
+     * @param snowflakeIdId
+     */
+    private void processPublishContentEmptyNote(Long creatorId, NoteDO noteDO, String snowflakeIdId) {
         // 删除个人主页 - 已发布笔记列表缓存
         // TODO: 应采取灵活的策略，如果是大V, 应该直接更新缓存，而不是直接删除；普通用户则可直接删除
         String publishedNoteListRedisKey = RedisKeyConstants.buildPublishedNoteListKey(creatorId);
         redisTemplate.delete(publishedNoteListRedisKey);
 
-        try {
-            // 笔记入库存储
-            noteDOMapper.insert(noteDO);
-        } catch (Exception e) {
-            log.error("==> 笔记存储失败", e);
-
-            // RPC: 笔记保存失败，则删除笔记内容
-            if (StringUtils.isNotBlank(contentUuid)) {
-                keyValueRpcService.deleteNoteContent(contentUuid);
-            }
-        }
+        // 笔记入库存储
+        noteDOMapper.insert(noteDO);
 
         // 延迟双删：发送延迟消息
         sendDelayDeleteRedisPublishedNoteListCacheMQ(creatorId);
@@ -237,8 +259,6 @@ public class NoteServiceImpl implements NoteService {
                 log.error("==> 【笔记发布】MQ 发送异常: ", throwable);
             }
         });
-
-        return Response.success();
     }
 
     /**
