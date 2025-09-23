@@ -5,6 +5,7 @@ import com.itpractice.framework.common.response.Response;
 import com.itpractice.xiaohongshu.user.biz.enums.ResponseCodeEnum;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -15,7 +16,7 @@ import java.util.Optional;
 
 /**
  * @author cyb
- *
+ * <p>
  * 全局异常处理
  */
 
@@ -25,9 +26,10 @@ public class GlobalExceptionHandler {
 
     /**
      * 捕获自定义业务异常
+     *
      * @return
      */
-    @ExceptionHandler({ BizException.class })
+    @ExceptionHandler({BizException.class})
     @ResponseBody
     public Response<Object> handleBizException(HttpServletRequest request, BizException e) {
         log.warn("{} request fail, errorCode: {}, errorMessage: {}", request.getRequestURI(), e.getErrorCode(), e.getErrorMessage());
@@ -36,16 +38,26 @@ public class GlobalExceptionHandler {
 
     /**
      * 捕获参数校验异常
+     *
      * @return
      */
-    @ExceptionHandler({ MethodArgumentNotValidException.class })
+    @ExceptionHandler({MethodArgumentNotValidException.class,
+            BindException.class
+    })
     @ResponseBody
-    public Response<Object> handleMethodArgumentNotValidException(HttpServletRequest request, MethodArgumentNotValidException e) {
+    public Response<Object> handleControllerException(HttpServletRequest request, Throwable e) {
         // 参数错误异常码
         String errorCode = ResponseCodeEnum.PARAM_NOT_VALID.getErrorCode();
 
         // 获取 BindingResult
-        BindingResult bindingResult = e.getBindingResult();
+        BindingResult bindingResult = null;
+
+        // 检查异常类型，并强制类型转换，获取绑定结果
+        if (e instanceof MethodArgumentNotValidException) {
+            bindingResult = (((MethodArgumentNotValidException) e)).getBindingResult();
+        } else if (e instanceof BindException) {
+            bindingResult = ((BindException) e).getBindingResult();
+        }
 
         StringBuilder sb = new StringBuilder();
 
@@ -72,11 +84,12 @@ public class GlobalExceptionHandler {
 
     /**
      * 其他类型异常
+     *
      * @param request
      * @param e
      * @return
      */
-    @ExceptionHandler({ Exception.class })
+    @ExceptionHandler({Exception.class})
     @ResponseBody
     public Response<Object> handleOtherException(HttpServletRequest request, Exception e) {
         log.error("{} request error, ", request.getRequestURI(), e);
@@ -86,11 +99,12 @@ public class GlobalExceptionHandler {
 
     /**
      * 捕获 guava 参数校验异常
+     *
      * @param request
      * @param e
      * @return
      */
-    @ExceptionHandler({ IllegalArgumentException.class })
+    @ExceptionHandler({IllegalArgumentException.class})
     @ResponseBody
     public Response<Object> handleIllegalArgumentException(HttpServletRequest request, IllegalArgumentException e) {
         // 参数错误异常码
