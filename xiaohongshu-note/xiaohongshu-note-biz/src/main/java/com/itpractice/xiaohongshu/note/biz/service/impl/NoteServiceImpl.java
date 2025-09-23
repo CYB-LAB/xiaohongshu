@@ -48,10 +48,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -721,7 +718,7 @@ public class NoteServiceImpl implements NoteService {
                 int count = noteLikeDOMapper.selectCountByUserIdAndNoteId(userId, noteId);
 
                 // 保底1天+随机秒数
-                long expireSeconds = 60*60*24 + RandomUtil.randomInt(60*60*24);
+                long expireSeconds = 60 * 60 * 24 + RandomUtil.randomInt(60 * 60 * 24);
 
                 // 目标笔记已经被点赞
                 if (count > 0) {
@@ -779,7 +776,7 @@ public class NoteServiceImpl implements NoteService {
             List<NoteLikeDO> noteLikeDOS = noteLikeDOMapper.selectLikedByUserIdAndLimit(userId, 100);
 
             // 过期时间：保底1天+随机秒数
-            long expireSeconds = 60*60*24 + RandomUtil.randomInt(60*60*24);
+            long expireSeconds = 60 * 60 * 24 + RandomUtil.randomInt(60 * 60 * 24);
 
             DefaultRedisScript<Long> script2 = new DefaultRedisScript<>();
             // Lua 脚本路径
@@ -844,6 +841,7 @@ public class NoteServiceImpl implements NoteService {
 
     /**
      * 初始化笔记点赞 Roaring Bitmap
+     *
      * @param userId
      * @param expireSeconds
      * @param rbitmapUserNoteLikeListKey
@@ -873,6 +871,7 @@ public class NoteServiceImpl implements NoteService {
 
     /**
      * 取消点赞笔记
+     *
      * @param unlikeNoteReqVO
      * @return
      */
@@ -908,7 +907,7 @@ public class NoteServiceImpl implements NoteService {
                 // 异步初始化 Roaring Bitmap
                 threadPoolTaskExecutor.submit(() -> {
                     // 保底1天+随机秒数
-                    long expireSeconds = 60*60*24 + RandomUtil.randomInt(60*60*24);
+                    long expireSeconds = 60 * 60 * 24 + RandomUtil.randomInt(60 * 60 * 24);
                     batchAddNoteLike2RBitmapAndExpire(userId, expireSeconds, rbitmapUserNoteLikeListKey);
                 });
 
@@ -966,6 +965,7 @@ public class NoteServiceImpl implements NoteService {
 
     /**
      * 收藏笔记
+     *
      * @param collectNoteReqVO
      * @return
      */
@@ -982,7 +982,7 @@ public class NoteServiceImpl implements NoteService {
         Long userId = LoginUserContextHolder.getUserId();
 
         // 布隆过滤器 Key
-        String rbitmapUserNoteCollectListKey  = RedisKeyConstants.buildRBitmapUserNoteCollectListKey(userId);
+        String rbitmapUserNoteCollectListKey = RedisKeyConstants.buildRBitmapUserNoteCollectListKey(userId);
 
         DefaultRedisScript<Long> script = new DefaultRedisScript<>();
         // Lua 脚本路径
@@ -1006,7 +1006,7 @@ public class NoteServiceImpl implements NoteService {
                 int count = noteCollectionDOMapper.selectCountByUserIdAndNoteId(userId, noteId);
 
                 // 保底1天+随机秒数
-                long expireSeconds = 60*60*24 + RandomUtil.randomInt(60*60*24);
+                long expireSeconds = 60 * 60 * 24 + RandomUtil.randomInt(60 * 60 * 24);
 
                 // 目标笔记已经被收藏
                 if (count > 0) {
@@ -1066,7 +1066,7 @@ public class NoteServiceImpl implements NoteService {
             List<NoteCollectionDO> noteCollectionDOS = noteCollectionDOMapper.selectCollectedByUserIdAndLimit(userId, 300);
 
             // 保底1天+随机秒数
-            long expireSeconds = 60*60*24 + RandomUtil.randomInt(60*60*24);
+            long expireSeconds = 60 * 60 * 24 + RandomUtil.randomInt(60 * 60 * 24);
 
             DefaultRedisScript<Long> script2 = new DefaultRedisScript<>();
             // Lua 脚本路径
@@ -1131,6 +1131,7 @@ public class NoteServiceImpl implements NoteService {
 
     /**
      * 初始化笔记收藏 Roaring Bitmap
+     *
      * @param userId
      * @param expireSeconds
      * @param rbitmapUserNoteCollectListKey
@@ -1161,6 +1162,7 @@ public class NoteServiceImpl implements NoteService {
 
     /**
      * 取消收藏笔记
+     *
      * @param unCollectNoteReqVO
      * @return
      */
@@ -1196,7 +1198,7 @@ public class NoteServiceImpl implements NoteService {
                 // 异步初始化 Roaring Bitmap
                 threadPoolTaskExecutor.submit(() -> {
                     // 保底1天+随机秒数
-                    long expireSeconds = 60*60*24 + RandomUtil.randomInt(60*60*24);
+                    long expireSeconds = 60 * 60 * 24 + RandomUtil.randomInt(60 * 60 * 24);
                     batchAddNoteCollect2RBitmapAndExpire(userId, expireSeconds, rbitmapUserNoteCollectListKey);
                 });
 
@@ -1255,6 +1257,7 @@ public class NoteServiceImpl implements NoteService {
 
     /**
      * 查询笔记是否被当前用户点赞和收藏
+     *
      * @param findNoteIsLikedAndCollectedReqVO
      * @return
      */
@@ -1287,7 +1290,74 @@ public class NoteServiceImpl implements NoteService {
     }
 
     /**
+     * 用户主页 - 查询已发布的笔记列表
+     *
+     * @param findPublishedNoteListReqVO
+     * @return
+     */
+    @Override
+    public Response<FindPublishedNoteListRspVO> findPublishedNoteList(FindPublishedNoteListReqVO findPublishedNoteListReqVO) {
+
+        // 目标用户ID
+        Long userId = findPublishedNoteListReqVO.getUserId();
+        // 游标
+        Long cursor = findPublishedNoteListReqVO.getCursor();
+
+        // TODO: 优先查询缓存
+
+        // 缓存无，则查询数据库
+        List<NoteDO> noteDOS = noteDOMapper.selectPublishedNoteListByUserIdAndCursor(userId, cursor);
+
+        // 返参 VO
+        FindPublishedNoteListRspVO findPublishedNoteListRspVO = null;
+        if (CollUtil.isNotEmpty(noteDOS)) {
+            // DO 转 VO
+            List<NoteItemRspVO> noteVOS = noteDOS.stream()
+                    .map(noteDO -> {
+                        // 获取封面图片
+                        String cover = StringUtils.isNotBlank(noteDO.getImgUris()) ?
+                                StringUtils.split(noteDO.getImgUris(), ",")[0] : null;
+
+                        NoteItemRspVO noteItemRspVO = NoteItemRspVO.builder()
+                                .noteId(noteDO.getId())
+                                .type(noteDO.getType())
+                                .creatorId(noteDO.getCreatorId())
+                                .cover(cover)
+                                .videoUri(noteDO.getVideoUri())
+                                .title(noteDO.getTitle())
+                                .build();
+                        return noteItemRspVO;
+                    }).toList();
+
+            // Feign 调用用户服务，获取博主的用户头像、昵称
+            Optional<Long> creatorIdOptional = noteDOS.stream().map(NoteDO::getCreatorId).findAny();
+            FindUserByIdRspDTO findUserByIdRspDTO = userRpcService.findById(creatorIdOptional.get());
+            if (Objects.nonNull(findUserByIdRspDTO)) {
+                // 循环 VO 集合，分别设置头像、昵称
+                noteVOS.forEach(noteItemRspVO -> {
+                    noteItemRspVO.setAvatar(findUserByIdRspDTO.getAvatar());
+                    noteItemRspVO.setNickname(findUserByIdRspDTO.getNickName());
+                });
+            }
+            // TODO: Feign 调用计数服务，批量获取笔记点赞数
+
+            // 过滤出最早发布的笔记 ID，充当下一页的游标
+            Optional<Long> earliestNoteId = noteDOS.stream().map(NoteDO::getId).min(Long::compareTo);
+
+            findPublishedNoteListRspVO = FindPublishedNoteListRspVO.builder()
+                    .notes(noteVOS)
+                    .nextCursor(earliestNoteId.orElse(null))
+                    .build();
+        }
+
+
+        return Response.success(findPublishedNoteListRspVO);
+    }
+
+
+    /**
      * 校验笔记是否被收藏
+     *
      * @param noteId
      * @param currUserId
      * @return
@@ -1317,7 +1387,7 @@ public class NoteServiceImpl implements NoteService {
                 int count = noteCollectionDOMapper.selectCountByUserIdAndNoteId(currUserId, noteId);
 
                 // 保底1天+随机秒数
-                long expireSeconds = 60*60*24 + RandomUtil.randomInt(60*60*24);
+                long expireSeconds = 60 * 60 * 24 + RandomUtil.randomInt(60 * 60 * 24);
 
                 // 目标笔记已经被收藏
                 if (count > 0) {
@@ -1336,6 +1406,7 @@ public class NoteServiceImpl implements NoteService {
 
     /**
      * 校验笔记是否被点赞
+     *
      * @param noteId
      * @param currUserId
      * @return
@@ -1365,7 +1436,7 @@ public class NoteServiceImpl implements NoteService {
                 int count = noteLikeDOMapper.selectCountByUserIdAndNoteId(currUserId, noteId);
 
                 // 保底1天+随机秒数
-                long expireSeconds = 60*60*24 + RandomUtil.randomInt(60*60*24);
+                long expireSeconds = 60 * 60 * 24 + RandomUtil.randomInt(60 * 60 * 24);
 
                 // 目标笔记已经被点赞
                 if (count > 0) {
@@ -1383,6 +1454,7 @@ public class NoteServiceImpl implements NoteService {
 
     /**
      * 异步初始化布隆过滤器
+     *
      * @param userId
      * @param expireSeconds
      * @param bloomUserNoteLikeListKey
@@ -1411,9 +1483,9 @@ public class NoteServiceImpl implements NoteService {
     }
 
 
-
     /**
      * 异步初始化用户点赞笔记 ZSet
+     *
      * @param userId
      * @param userNoteLikeZSetKey
      */
@@ -1428,7 +1500,7 @@ public class NoteServiceImpl implements NoteService {
                 List<NoteLikeDO> noteLikeDOS = noteLikeDOMapper.selectLikedByUserIdAndLimit(userId, 100);
                 if (CollUtil.isNotEmpty(noteLikeDOS)) {
                     // 保底1天+随机秒数
-                    long expireSeconds = 60*60*24 + RandomUtil.randomInt(60*60*24);
+                    long expireSeconds = 60 * 60 * 24 + RandomUtil.randomInt(60 * 60 * 24);
                     // 构建 Lua 参数
                     Object[] luaArgs = buildNoteLikeZSetLuaArgs(noteLikeDOS, expireSeconds);
 
@@ -1497,6 +1569,7 @@ public class NoteServiceImpl implements NoteService {
 
     /**
      * 校验笔记是否存在
+     *
      * @param noteId
      */
     private Long checkNoteIsExistAndGetCreatorId(Long noteId) {
@@ -1539,6 +1612,7 @@ public class NoteServiceImpl implements NoteService {
 
     /**
      * 初始化笔记收藏布隆过滤器
+     *
      * @param userId
      * @param expireSeconds
      * @param bloomUserNoteCollectListKey
@@ -1569,6 +1643,7 @@ public class NoteServiceImpl implements NoteService {
 
     /**
      * 异步初始化用户收藏笔记 ZSet
+     *
      * @param userId
      * @param userNoteCollectZSetKey
      */
@@ -1583,7 +1658,7 @@ public class NoteServiceImpl implements NoteService {
                 List<NoteCollectionDO> noteCollectionDOS = noteCollectionDOMapper.selectCollectedByUserIdAndLimit(userId, 300);
                 if (CollUtil.isNotEmpty(noteCollectionDOS)) {
                     // 保底1天+随机秒数
-                    long expireSeconds = 60*60*24 + RandomUtil.randomInt(60*60*24);
+                    long expireSeconds = 60 * 60 * 24 + RandomUtil.randomInt(60 * 60 * 24);
                     // 构建 Lua 参数
                     Object[] luaArgs = buildNoteCollectZSetLuaArgs(noteCollectionDOS, expireSeconds);
 
